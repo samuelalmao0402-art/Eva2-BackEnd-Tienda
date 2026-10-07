@@ -1,7 +1,5 @@
 from django.db import models
 
-
-
 # Create your models here.
 # Creamos la Tabla cliente para que llevar un registro de los clientes que han realizado una compra
 class Cliente(models.Model):
@@ -14,7 +12,7 @@ class Cliente(models.Model):
 class Producto(models.Model):
       nombre_producto = models.CharField(max_length=50)
       marca = models.CharField(max_length=30)
-      categoría =  models.CharField(max_length=30)
+      categoria =  models.CharField(max_length=30)
       precio_costo= models.DecimalField(max_digits=10, decimal_places=2)
       precio_venta = models.DecimalField(max_digits=10, decimal_places=2)
       fecha_venc = models.DateField()
