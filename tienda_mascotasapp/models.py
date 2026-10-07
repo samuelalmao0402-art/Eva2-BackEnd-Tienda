@@ -1,5 +1,4 @@
 from django.db import models
-
 # Create your models here.
 # Creamos la Tabla cliente para que llevar un registro de los clientes que han realizado una compra
 class Cliente(models.Model):
@@ -18,9 +17,10 @@ class Producto(models.Model):
       fecha_venc = models.DateField()
      
 class Stock(models.Model):
-    producto= models.ForeignKey(Producto, on_delete=models.PROTECT)
+    producto= models.ForeignKey(Producto, models.PROTECT)
     stock = models.IntegerField(default=0) # --> El parametro de default asigna por defecto una cantidad si aun no se agregan datos al stock
     stock_min= models.IntegerField(default=1)# Esto con el fin de que no se agreguen datos nulos a la tabla
+
 
 class Venta(models.Model):
     fecha = models.DateField()

@@ -98,6 +98,7 @@ def ver_stock(request):
     lista_stock = Stock.objects.all()
     return render(request, 'tienda_mascotasapp/lstock.html',{'lista_stock': lista_stock})
 
+
 def actualizar_stock(request, id):
     actl_stock = Stock.objects.get(id=id)
     if request.method == 'POST':
@@ -105,6 +106,7 @@ def actualizar_stock(request, id):
         actl_stock.save()
         return redirect('ver_stock')
     return render(request, 'tienda_mascotasapp/actualizar_stock.html', {'stock': actl_stock})
+
 
 
 def registrar_venta(request):
