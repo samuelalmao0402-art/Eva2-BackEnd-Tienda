@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Actualizar Stock</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .contenedor { width: 50%; margin: 40px auto; background-color: white; padding: 30px; border-radius: 8px; }
+        h1 { text-align: center; }
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .boton { display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #333; color: white; text-decoration: none; border: none; border-radius: 5px; cursor: pointer; }
+        .acciones { text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+
+    <h1> Actualizar Stock</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <label>Producto a actualizar:</label>
+        <!-- Mostramos el nombre bloqueado para que el usuario sepa qué está actualizando -->
+        <input type="text" value="{{ stock.producto.nombre_producto }}" disabled style="background-color: #e9ecef; cursor: not-allowed;">
+
+        <label for="Cantidad">Nuevo Stock Total:</label>
+        <!-- name="Cantidad" es obligatorio para que views.py lo reconozca -->
+        <input type="number" id="Cantidad" name="Cantidad" value="{{ stock.stock }}" min="0" required>
+
+        <div class="acciones">
+            <button type="submit" class="boton"> Guardar Cambios</button>
+            <!-- Cambié el botón para que vuelva a la lista de stock en caso de cancelar -->
+            <a href="{% url 'lstock' %}" class="boton" style="background-color: #777;"> Cancelar</a>
+        </div>
+    </form>
+
+</div>
+
+</body>
+</html>

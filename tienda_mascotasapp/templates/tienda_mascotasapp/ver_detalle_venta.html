@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle de Venta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .contenedor {
+            width: 50%;
+            margin: 40px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            border-bottom: 2px dashed #ccc;
+            padding-bottom: 15px;
+        }
+        .info-boleta {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+        .info-boleta p {
+            margin: 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .total {
+            text-align: right;
+            font-size: 1.5em;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        .acciones {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .boton {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+
+    <h1>🧾 Boleta #{{ venta.id }}</h1>
+
+    <div class="info-boleta">
+        <p><strong>Fecha:</strong> {{ venta.fecha }}</p>
+        <p><strong>Cliente:</strong> {{ venta.cliente.nombre }}</p>
+        <p><strong>RUT:</strong> {{ venta.cliente.rut }}</p>
+        <p><strong>Método de Pago:</strong> {{ venta.metodo_pago }}</p>
+    </div>
+
+    <h3>Productos Comprados:</h3>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Precio Unit.</th>
+                <th>Cantidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in detalles %}
+            <tr>
+                <td>{{ d.producto.nombre_producto }}</td>
+                <td>${{ d.precio_unitario }}</td>
+                <td>{{ d.cantidad }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" style="text-align: center;">No hay detalles registrados para esta venta.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="total">
+        Total Pagado: ${{ venta.total }}
+    </div>
+
+    <div class="acciones">
+        <a href="{% url 'ver_ventas' %}" class="boton">⬅️ Volver al Historial</a>
+        <a href="{% url 'inicio' %}" class="boton" style="background-color: #777;">🏠 Volver al Inicio</a>
+    </div>
+
+</div>
+
+</body>
+</html>

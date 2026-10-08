@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrar Venta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .contenedor {
+            width: 50%;
+            margin: 40px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .boton {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .acciones {
+            text-align: center;
+        }
+        .error-msg {
+            background-color: #ffdddd;
+            color: #d8000c;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 15px;
+            border: 1px solid #d8000c;
+        }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+
+    <h1>🛒 Registrar Nueva Venta</h1>
+
+    {% if error %}
+        <div class="error-msg">
+            <strong>❌ {{ error }}</strong>
+        </div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <label for="fecha">Fecha de la Venta:</label>
+        <input type="date" id="fecha" name="fecha" required>
+
+        <label for="cliente_id">Seleccionar Cliente:</label>
+        <select id="cliente_id" name="cliente_id" required>
+            <option value="">-- Elija un cliente --</option>
+            <!-- Este ciclo llenará las opciones con los clientes de tu base de datos -->
+            {% for c in clientes %}
+                <option value="{{ c.id }}">{{ c.nombre }} (RUT: {{ c.rut }})</option>
+            {% endfor %}
+        </select>
+
+        <label for="producto_id">Seleccionar Producto:</label>
+        <select id="producto_id" name="producto_id" required>
+            <option value="">-- Elija un producto --</option>
+            <!-- Este ciclo llenará las opciones con los productos de tu base de datos -->
+            {% for p in productos %}
+                <option value="{{ p.id }}">{{ p.nombre_producto }} - ${{ p.precio_venta }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="cantidad">Cantidad a vender:</label>
+        <input type="number" id="cantidad" name="cantidad" min="1" value="1" required>
+
+        <label for="metodo_pago">Método de Pago:</label>
+        <select id="metodo_pago" name="metodo_pago" required>
+            <option value="">-- Elija método de pago --</option>
+            <option value="Efectivo">Efectivo</option>
+            <option value="Débito">Débito</option>
+            <option value="Crédito">Crédito</option>
+            <option value="Transferencia">Transferencia</option>
+        </select>
+
+        <div class="acciones">
+            <button type="submit" class="boton" style="background-color: #4CAF50;">💰 Procesar Venta</button>
+            <a href="{% url 'inicio' %}" class="boton" style="background-color: #777;">🏠 Volver</a>
+        </div>
+    </form>
+
+</div>
+
+</body>
+</html>

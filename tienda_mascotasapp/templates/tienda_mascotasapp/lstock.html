@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Estado de Inventario</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .contenedor { width: 80%; margin: 40px auto; text-align: center; }
+        .boton { display: inline-block; padding: 10px 15px; background-color: #333; color: white; text-decoration: none; border-radius: 5px; margin-bottom: 20px;}
+        .tarjeta { background-color: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; border-left: 5px solid #008CBA; text-align: left; }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+    <h1> Estado de Inventario</h1>
+    <a href="{% url 'inicio' %}" class="boton"> Volver al Inicio</a>
+
+    <!-- AQUÍ ESTÁ LA CLAVE: Debe decir lista_stock -->
+    {% for s in lista_stock %}
+        <div class="tarjeta">
+            <h3>{{ s.producto.nombre_producto }}</h3>
+            <p><strong>Stock actual:</strong> {{ s.stock }} unidades</p>
+            <p><strong>Stock mínimo:</strong> {{ s.stock_min }} unidades</p>
+
+            <a href="{% url 'actualizar_stock' s.id %}" class="boton" style="background-color: #f0ad4e; color: black;"> Actualizar Stock</a>
+        </div>
+    {% empty %}
+        <p>No hay inventario registrado.</p>
+    {% endfor %}
+
+</div>
+
+</body>
+</html>

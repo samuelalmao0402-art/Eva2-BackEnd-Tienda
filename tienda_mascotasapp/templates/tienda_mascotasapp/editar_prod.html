@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Producto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .contenedor {
+            width: 50%;
+            margin: 40px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .boton {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #333;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .acciones {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+
+    <h1>✏️ Editar Producto</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- Los 'name' coinciden con views.py y los 'value' con la base de datos -->
+        <label for="Nombre_Producto">Nombre del Producto:</label>
+        <input type="text" id="Nombre_Producto" name="Nombre_Producto" value="{{ producto.nombre_producto }}" required>
+
+        <label for="Marca">Marca:</label>
+        <input type="text" id="Marca" name="Marca" value="{{ producto.marca }}" required>
+
+        <label for="Categoria">Categoría:</label>
+        <input type="text" id="Categoria" name="Categoria" value="{{ producto.categoria }}" required>
+
+        <label for="Precio_Costo">Precio de Costo:</label>
+        <input type="number" id="Precio_Costo" name="Precio_Costo" step="0.01" value="{{ producto.precio_costo }}" required>
+
+        <label for="Precio_Venta">Precio de Venta:</label>
+        <input type="number" id="Precio_Venta" name="Precio_Venta" step="0.01" value="{{ producto.precio_venta }}" required>
+
+        <label for="Fecha_Venc">Fecha de Vencimiento (Opcional):</label>
+        <input type="date" id="Fecha_Venc" name="Fecha_Venc" value="{{ producto.fecha_venc|date:'Y-m-d' }}">
+
+        <div class="acciones">
+            <button type="submit" class="boton">💾 Actualizar Producto</button>
+            <!-- Cambié el botón cancelar para que devuelva al inicio y no cause error -->
+            <a href="{% url 'inicio' %}" class="boton" style="background-color: #777;">❌ Cancelar</a>
+        </div>
+    </form>
+
+</div>
+
+</body>
+</html>

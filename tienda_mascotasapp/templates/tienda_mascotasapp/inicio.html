@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tienda Mascotas - Inicio</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .contenedor {
+            width: 80%;
+            margin: 40px auto;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .acciones {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .boton {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        .tarjeta {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #008CBA; /* Borde azul para clientes */
+        }
+        .tarjeta-producto {
+            border-left: 5px solid #FF9800; /* Borde naranja para productos */
+        }
+        .tarjeta h3 {
+            margin-top: 0;
+        }
+        .botones {
+            margin-top: 15px;
+        }
+        .botones a {
+            margin-right: 10px;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+
+    <h1>🐾 Tienda Mascotas</h1>
+
+    <!-- Botones de Acción -->
+    <div class="acciones">
+        <a href="{% url 'ingresar_prod' %}" class="boton">➕ Ingresar Producto</a>
+        <a href="{% url 'ingresar_cli' %}" class="boton">👤 Ingresar Cliente</a>
+        <a href="{% url 'lstock' %}" class="boton">📋 Listar Stock</a>
+        
+        <!-- NUEVOS BOTONES DE VENTAS -->
+        <a href="{% url 'registrar_venta' %}" class="boton" style="background-color: #4CAF50;">🛒 Nueva Venta</a>
+        <a href="{% url 'ver_ventas' %}" class="boton" style="background-color: #2196F3;">🧾 Historial de Ventas</a>
+    </div>
+
+    <!-- SECCIÓN 1: PRODUCTOS -->
+    <h2>📦 Resumen de Productos</h2>
+
+    {% for p in producto %}
+        <div class="tarjeta tarjeta-producto">
+            <h3>{{ p.nombre_producto }}</h3>
+            <p><strong>Marca:</strong> {{ p.marca }}</p>
+            <p><strong>Precio Venta:</strong> ${{ p.precio_venta }}</p>
+            
+            <div class="botones">
+                <a href="{% url 'ver_prod' p.id %}">👁️ Ver Detalle</a>
+                <a href="{% url 'editar_prod' p.id %}">✏️ Editar</a>
+                <a href="{% url 'eliminar_prod' p.id %}">🗑️ Eliminar</a>
+            </div>
+        </div>
+    {% empty %}
+        <p style="text-align: center;">No existen productos registrados en este momento.</p>
+    {% endfor %}
+
+    <!-- SECCIÓN 2: CLIENTES -->
+    <h2 style="margin-top: 50px;">👥 Resumen de Clientes</h2>
+
+    {% for c in cliente %}
+        <div class="tarjeta">
+            <h3>{{ c.nombre }}</h3>
+            <p><strong>RUT:</strong> {{ c.rut }}</p>
+            <p><strong>Teléfono:</strong> {{ c.telefono }}</p>
+            <p><strong>Correo:</strong> {{ c.correo }}</p>
+            
+            <div class="botones">
+                <a href="{% url 'ver_cli' c.id %}">👁️ Ver Perfil</a>
+            </div>
+        </div>
+    {% empty %}
+        <p style="text-align: center;">No existen clientes registrados en este momento.</p>
+    {% endfor %}
+
+</div>
+
+</body>
+</html>
