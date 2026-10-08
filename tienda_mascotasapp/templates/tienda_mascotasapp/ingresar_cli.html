@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Ingresar Cliente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .contenedor {
+            width: 50%;
+            margin: 40px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .boton {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #333;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .acciones {
+            text-align: center;
+        }
+        /* ESTILO NUEVO PARA EL MENSAJE DE ERROR */
+        .error-msg {
+            background-color: #ffdddd;
+            color: #d8000c;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 15px;
+            border: 1px solid #d8000c;
+        }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+
+    <h1>👤 Registrar Cliente</h1>
+
+    <!-- BLOQUE NUEVO: Muestra el error si el RUT ya existe -->
+    {% if error %}
+        <div class="error-msg">
+            <strong>❌ {{ error }}</strong>
+        </div>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- Los name="" ahora coinciden con tu views.py -->
+        <label for="Rut">RUT:</label>
+        <input type="text" id="Rut" name="Rut" placeholder="12345678-9" required>
+
+        <label for="Nombre">Nombre Completo:</label>
+        <input type="text" id="Nombre" name="Nombre" required>
+
+        <label for="Correo">Correo Electrónico:</label>
+        <input type="email" id="Correo" name="Correo" required>
+
+        <label for="Telefono">Teléfono:</label>
+        <input type="text" id="Telefono" name="Telefono" required>
+
+        <label for="Direccion">Dirección:</label>
+        <input type="text" id="Direccion" name="Direccion" required>
+
+        <div class="acciones">
+            <button type="submit" class="boton">💾 Guardar Cliente</button>
+            <a href="{% url 'inicio' %}" class="boton" style="background-color: #777;">🏠 Volver</a>
+        </div>
+    </form>
+
+</div>
+
+</body>
+</html>

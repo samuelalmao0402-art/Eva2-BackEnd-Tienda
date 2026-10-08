@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle del Producto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .contenedor {
+            width: 80%;
+            margin: 40px auto;
+        }
+        h1 {
+            text-align: center;
+        }
+        .acciones {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .boton {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .tarjeta {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+        .tarjeta h2 {
+            margin-top: 0;
+        }
+        .botones {
+            margin-top: 15px;
+        }
+        .botones a {
+            margin-right: 10px;
+            text-decoration: none;
+            background-color: #ddd;
+            padding: 5px 10px;
+            border-radius: 3px;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+
+    <h1>🔍 Detalle del Producto</h1>
+
+    <div class="acciones">
+        <a href="{% url 'inicio' %}" class="boton">🏠 Volver al Inicio</a>
+    </div>
+
+    <div class="tarjeta">
+        <h2>{{ producto.nombre_producto }}</h2>
+        <p><strong>Marca:</strong> {{ producto.marca }}</p>
+        <p><strong>Categoría:</strong> {{ producto.categoria }}</p>
+        <p><strong>Precio Costo:</strong> ${{ producto.precio_costo }}</p>
+        <p><strong>Precio Venta:</strong> ${{ producto.precio_venta }}</p>
+        <p><strong>Fecha de Vencimiento:</strong> {% if producto.fecha_venc %}{{ producto.fecha_venc|date:'d/m/Y' }}{% else %}No aplica{% endif %}</p>
+
+        <div class="botones">
+            <a href="{% url 'editar_prod' producto.id %}">✏️ Editar</a>
+            <a href="{% url 'eliminar_prod' producto.id %}">🗑️ Eliminar</a>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

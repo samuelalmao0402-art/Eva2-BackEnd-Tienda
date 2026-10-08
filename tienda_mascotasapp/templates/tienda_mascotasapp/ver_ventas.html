@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Historial de Ventas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .contenedor {
+            width: 80%;
+            margin: 40px auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .acciones {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .boton {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        .tarjeta {
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #4CAF50; /* Borde verde para las ventas */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .tarjeta h3 {
+            margin-top: 0;
+            color: #444;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .botones {
+            margin-top: 15px;
+        }
+        .botones a {
+            text-decoration: none;
+            color: #008CBA;
+            font-weight: bold;
+        }
+        .botones a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+
+    <h1>🧾 Historial de Ventas</h1>
+
+    <div class="acciones">
+        <a href="{% url 'inicio' %}" class="boton">🏠 Volver al Inicio</a>
+        <a href="{% url 'registrar_venta' %}" class="boton" style="background-color: #4CAF50;">➕ Registrar Nueva Venta</a>
+    </div>
+
+    <!-- Ciclo para mostrar cada venta -->
+    {% for v in ventas %}
+        <div class="tarjeta">
+            <h3>Venta #{{ v.id }} - Fecha: {{ v.fecha }}</h3>
+            <p><strong>Cliente:</strong> {{ v.cliente.nombre }} (RUT: {{ v.cliente.rut }})</p>
+            <p><strong>Método de Pago:</strong> {{ v.metodo_pago }}</p>
+            <p><strong>Total Cobrado:</strong> <span style="color: #4CAF50; font-weight: bold; font-size: 1.2em;">${{ v.total }}</span></p>
+            
+            <div class="botones">
+                <!-- Este botón nos llevará a la "boleta" con el desglose exacto (Nuestro último paso) -->
+                <a href="{% url 'ver_detalle_venta' v.id %}">👁️ Ver Detalle de Boleta</a>
+            </div>
+        </div>
+    {% empty %}
+        <p style="text-align: center; color: #777;">Aún no se han registrado ventas en el sistema.</p>
+    {% endfor %}
+
+</div>
+
+</body>
+</html>

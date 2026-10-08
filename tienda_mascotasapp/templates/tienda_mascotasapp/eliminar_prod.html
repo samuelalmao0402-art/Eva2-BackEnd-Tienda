@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Eliminar Producto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .contenedor {
+            width: 50%;
+            margin: 40px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .boton {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #d9534f;
+            color: white;
+            text-decoration: none;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .boton-cancelar {
+            background-color: #777;
+        }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+
+    <h1>🗑️ Eliminar Producto</h1>
+
+    <!-- Corregimos 'nombre' por 'nombre_producto' -->
+    <p>¿Estás seguro de que deseas eliminar el producto <strong>"{{ producto.nombre_producto }}"</strong>?</p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="boton">Sí, Eliminar</button>
+        
+        <!-- Cambiamos 'ver_prod' por 'inicio' para evitar el error -->
+        <a href="{% url 'inicio' %}" class="boton boton-cancelar">Cancelar</a>
+    </form>
+
+</div>
+
+</body>
+</html>

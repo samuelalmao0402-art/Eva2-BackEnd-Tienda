@@ -25,23 +25,30 @@ def ingresar_producto(request):
         precio_venta = request.POST['Precio_Venta']
         fecha_venc = request.POST['Fecha_Venc']
 
+        stock_inicial = request.POST['Stock_Inicial']
+        if Producto.objects.filter(nombre_producto=nombre_producto).exists():
+            return render(request, 'tienda_mascotasapp/ingresar_prod.html', {
+                'error': f'¡El producto "{nombre_producto}" ya está registrado en el sistema!'
+            })
+        
         nuevo_prod = Producto.objects.create(
             nombre_producto = nombre_producto,
             marca = marca,
             categoria = categoria,
             precio_costo = precio_costo,
             precio_venta = precio_venta,
-            fecha_venc = fecha_venc if fecha_venc else None # Esto evita errores si la fecha esta vacia dandole un parametro none si el usuario se le olvida ingresar la fecha
+            fecha_venc = fecha_venc if fecha_venc else '2099-12-31'# Esto evita errores si la fecha esta vacia dandole un parametro none si el usuario se le olvida ingresar la fecha
 
         )
         #Crea el nuevo producto en la tabla stock de manera independiente
         Stock.objects.create(
             producto=nuevo_prod,
-            stock=0,
+            stock=int(stock_inicial),
             stock_min=1
         )
         return redirect('inicio')
     return render(request, 'tienda_mascotasapp/ingresar_prod.html')
+
 
 def ver_producto(request,id):
     producto = Producto.objects.get(id=id)
@@ -50,6 +57,7 @@ def ver_producto(request,id):
 def eliminar_producto(request,id):
     producto = Producto.objects.get(id=id)
     if request.method == 'POST':
+        Stock.objects.filter(producto=producto).delete()
         producto.delete()
         return redirect('inicio')
     return render(request, 'tienda_mascotasapp/eliminar_prod.html',{'producto':producto})
@@ -78,6 +86,12 @@ def ingresar_cliente(request):
         correo = request.POST['Correo']
         telefono = request.POST['Telefono']
         direccion = request.POST['Direccion']
+
+        if Cliente.objects.filter(rut=rut).exists():
+            # Si existe, recargamos la página enviando un mensaje de error
+            return render(request, 'tienda_mascotasapp/ingresar_cli.html', {
+                'error': f'¡El RUT {rut} ya está registrado en el sistema!'
+            })
         Cliente.objects.create(
             rut = rut,
             nombre = nombre,
@@ -104,18 +118,19 @@ def actualizar_stock(request, id):
     if request.method == 'POST':
         actl_stock.stock = int(request.POST['Cantidad'])
         actl_stock.save()
-        return redirect('ver_stock')
+        return redirect('lstock')
     return render(request, 'tienda_mascotasapp/actualizar_stock.html', {'stock': actl_stock})
 
 
 
 def registrar_venta(request):
     if request.method == 'POST':
-        # Capturar los datos del formulario HTML
-        cliente_id = request.POST['Cliente']
-        producto_id = request.POST['Producto']
-        cantidad = int(request.POST['Cantidad'])
-        metodo_pago = request.POST['Metodo_Pago']
+        # Capturar los datos del formulario HTML (Ajustado a los name del HTML)
+        fecha = request.POST.get('fecha')
+        cliente_id = request.POST.get('cliente_id')
+        producto_id = request.POST.get('producto_id')
+        cantidad = int(request.POST.get('cantidad'))
+        metodo_pago = request.POST.get('metodo_pago')
 
         # Buscar los objetos exactos en la base de datos
         cliente_obj = Cliente.objects.get(id=cliente_id)
@@ -124,20 +139,25 @@ def registrar_venta(request):
 
         # 0. Validar stock (¡Para que no compren más de lo que hay!)
         if cantidad > stock_obj.stock:
-            # Aquí podrías mandar un mensaje de error, por ahora lo devolvemos al inicio
-            return redirect('registrar_venta')
+            # En vez de redirigir, mostramos el cuadro rojo de error que pusimos en el HTML
+            return render(request, 'tienda_mascotasapp/registrar_venta.html', {
+                'error': f'¡Stock insuficiente! Solo quedan {stock_obj.stock} unidades de {producto_obj.nombre_producto}.',
+                'clientes': Cliente.objects.all(),
+                'productos': Producto.objects.all()
+            })
 
         # Calcular cuánto se va a pagar
         total_venta = producto_obj.precio_venta * cantidad
 
-        # 1. Crear Venta (La boleta general)
+        # 1. Crear Venta (La boleta general) agregando la fecha
         nueva_venta = Venta.objects.create(
+            fecha=fecha,
             cliente=cliente_obj,
             total=total_venta,
             metodo_pago=metodo_pago
         )
 
-        # 2. Crear Detalle de Venta (El producto dentro de la boleta)
+        # 2. Crear DetalleVenta (El registro del producto específico)
         DetalleVenta.objects.create(
             venta=nueva_venta,
             producto=producto_obj,
@@ -145,19 +165,17 @@ def registrar_venta(request):
             cantidad=cantidad
         )
 
-        # 3. Descontar Stock (Restarle lo que se llevó el cliente)
+        # 3. Descontar el stock vendido de la bodega y guardar el cambio
         stock_obj.stock -= cantidad
         stock_obj.save()
 
-        # Enviar al usuario a la pantalla donde se ven todas las ventas
-        return redirect('ver_ventas')
+        # Al terminar, volvemos al inicio
+        return redirect('inicio')
 
-    # Si entra normal (sin enviar datos), le mostramos la página con las opciones
-    clientes = Cliente.objects.all()
-    productos = Producto.objects.all()
+    # 4. Si entramos a la página (GET), enviamos las listas para rellenar los selectores
     return render(request, 'tienda_mascotasapp/registrar_venta.html', {
-        'clientes': clientes,
-        'productos': productos
+        'clientes': Cliente.objects.all(),
+        'productos': Producto.objects.all()
     })
 
 
