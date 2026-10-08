@@ -72,7 +72,7 @@ def actualizar_producto(request,id):
         producto.precio_costo = request.POST['Precio_Costo']
         producto.precio_venta = request.POST['Precio_Venta']
         fecha_venc = request.POST['Fecha_Venc']
-        producto.fecha_venc = fecha_venc if fecha_venc else None # Esto evita errores si la fecha esta vacia dandole un parametro none si el usuario se le olvida ingresar la fecha
+        producto.fecha_venc = fecha_venc if fecha_venc else '2099-12-31'# Esto evita errores si la fecha esta vacia dandole un parametro none si el usuario se le olvida ingresar la fecha
         producto.save()
         return redirect('inicio')
     return render(request, 'tienda_mascotasapp/editar_prod.html',{'producto':producto})
