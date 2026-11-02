@@ -1,14 +1,28 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
+
 # Create your models here.
 # Creamos la Tabla cliente para que llevar un registro de los clientes que han realizado una compra
-class Cliente(models.Model):# Modificar Cliente para que ingrese como invitado agregarle el parametro passwd
-   rut = models.CharField(max_length=10, unique=True)
-   nombre = models.CharField(max_length=30)
-   correo = models.EmailField(max_length=60)
-   telefono = models.CharField(max_length=20)
-   direccion = models.CharField(max_length=100)
-   password = models.CharField(max_length=128)# Agregamos el campo password para que el usuario pueda aplicar un formulario de registro para el e-comers
-   
+# Consultar a tobal si le gusta ?
+
+class Usuario(AbstractUser):
+    # Campo opcional para distinguir roles visualmente si lo necesitas
+    Roles = (
+        ('admin', 'Administrador'),
+        ('cliente', 'Cliente'),
+    )
+    roles = models.CharField(max_length=20, choices=Roles, default='cliente')
+    email = models.EmailField(unique=True)
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username'] # Requerido por el comando createsuperuser de Django
+
+class Cliente(models.Model):# Separamos cliente y usuario con una relacion de uno a uno cosa de que un usuario tenga un solo perfil cliente y no muchos por ello no se uso foreinkey
+    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='perfil')
+    rut = models.CharField(max_length=10, unique=True)
+    nombre = models.CharField(max_length=30)
+    telefono = models.CharField(max_length=20)
+    direccion = models.CharField(max_length=100)
+
 class Producto(models.Model):
     nombre_producto = models.CharField(max_length=50)
     marca = models.CharField(max_length=30)
@@ -32,7 +46,6 @@ class ItemCarrito(models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     cantidad_compra = models.PositiveIntegerField(default=1)
     # Se implemento directamente PositiveIntergerField para evitar cantidades de productos negativos en una compra 
-   
 class Stock(models.Model):
     producto= models.ForeignKey(Producto, on_delete=models.PROTECT)
     stock = models.PositiveIntegerField(default=0) # --> El parametro de default asigna por defecto una cantidad si aun no se agregan datos al stock
@@ -51,7 +64,6 @@ class Venta(models.Model):
         ('Credito', 'CREDITO')
     ] # Se aplico una tupla para poder seleccionar una opcion en vez de escribirla directamente podra selecionarla por medio de <select><options> con un desplegable en html
     metodo_pago = models.CharField(max_length=20, choices=t_metodo_pago)
-
 
 class DetalleVenta(models.Model):
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE)

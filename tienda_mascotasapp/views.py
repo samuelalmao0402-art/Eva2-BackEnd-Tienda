@@ -4,15 +4,20 @@ from django.http import HttpResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.authentication import authenticate
 from rest_framework.authtoken.models import Token
+from django.contrib.auth.password_validation import validate_password
+from django.db import transaction
 # Importacion de funciones en models 
 from .models import Cliente
 from .models import Producto
 from .models import Venta
 from .models import DetalleVenta
 from .models import Stock
+from .models import Usuario
+from .models import CarritoCompra, ItemCarrito
 
 
 def login(request):
@@ -42,7 +47,6 @@ def actualizar_producto(request):
 
 # Logica de Cliente
 def ingresar_cliente(request):
-   
     if request.method == 'POST':
         rut = request.POST ['Rut']
         nombre = request.POST['Nombre']
@@ -136,26 +140,55 @@ def registrar_venta(request):
 
 
 def ver_ventas(request):
-    # Trae todas las ventas ordenadas desde la más nueva a la más vieja ('-id')
-    ventas = Venta.objects.all().order_by('-id')
-    return render(request, 'tienda_mascotasapp/ver_ventas.html', {'ventas': ventas})
+    return render(request, 'tienda_mascotasapp/ver_ventas.html')
 
 
-def ver_detalle_venta(request, id):
-    # Busca la venta exacta a la que se le hizo clic
-    venta = Venta.objects.get(id=id)
-    # Busca todos los productos que están dentro de esa venta
-    detalles = DetalleVenta.objects.filter(venta=venta)
-    
-    return render(request, 'tienda_mascotasapp/ver_detalle_venta.html', {
-        'venta': venta,
-        'detalles': detalles
-    })
+def ver_detalle_venta(request):
+    return render(request, 'tienda_mascotasapp/ver_detalle_venta.html')
 
 #LOGICA DE NEGOCIO Y APIS APLICADAS
 
 #APIS LOGIN --> REUTILIZAR LA DEL PROFE
+class LoginAPIView(APIView):
+    permission_classes = [AllowAny]
 
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        if not email or not password:
+            return Response({
+                'error': 'Debe ingresar el correo y la contraseña.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # 1. Autenticar utilizando el correo como username (configurado en el modelo Usuario)
+        usuario = authenticate(username=email, password=password)
+
+        if not usuario:
+            return Response({
+                'error': 'Credenciales inválidas. Verifique su correo y contraseña.'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+
+        # 2. Verificar si el usuario está activo
+        if not usuario.is_active:
+            return Response({
+                'error': 'Esta cuenta se encuentra desactivada.'
+            }, status=status.HTTP_403_FORBIDDEN)
+
+        # 3. Obtener o crear el Token de acceso para la API REST
+        token, created = Token.objects.get_or_create(user=usuario)
+
+        # 4. Determinar los privilegios y rol para la respuesta
+        es_admin = usuario.is_staff or usuario.is_superuser
+        rol_usuario = usuario.roles if hasattr(usuario, 'roles') else ('admin' if es_admin else 'cliente')
+
+        return Response({
+            'mensaje': '¡Inicio de sesión exitoso!',
+            'token': token.key,
+            'email': usuario.email,
+            'es_admin': es_admin,
+            'roles': rol_usuario
+        }, status=status.HTTP_200_OK)
 
 # FUNCIONES GENERALES DE ADIM CON APIS 
 
@@ -165,7 +198,7 @@ def ver_detalle_venta(request, id):
 class ProductosApiView(APIView):
 
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]# Cambiar por una funcion implementada para que sea administrador por rol
     #GET PARA MOSTRAR TODOS LOS PRODCUTOS CON ALL
     def get(self,request):
 
@@ -197,19 +230,19 @@ class ProductosApiView(APIView):
         precio_costo = request.data.get('precio_costo')
         precio_venta = request.data.get('precio_venta')
         fecha_venc = request.data.get('fecha_venc')
+        estado = request.data.get('estado')
 
-       
-        if not nombre_producto or not marca or not categoria or not precio_costo or not precio_venta or not fecha_venc is None:
+        if not nombre_producto or not marca or not categoria or not precio_costo or not precio_venta or not fecha_venc is None or estado is None:
             return Response({
                 'mensaje': 'Los campos no pueden estar vacios'
             }, status=status.HTTP_400_BAD_REQUEST)
 
         if precio_costo < 0 or precio_venta <0:
-           return Response({
-               'error': 'los precios de venta y costo no pueden ser 0 en el registro'
-           }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'error': 'los precios de venta y costo no pueden ser 0 en el registro'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        if Producto.objects.filter(nombre_producto_iexact=nombre_producto).exists():
+        if Producto.objects.filter(nombre_producto__iexact=nombre_producto).exists():
             return Response({
                 'error': 'El producto no puede tener el mismo nombre'
             }, status=status.HTTP_400_BAD_REQUEST)
@@ -222,12 +255,13 @@ class ProductosApiView(APIView):
             precio_costo = precio_costo,
             precio_venta = precio_venta,
             fecha_venc = fecha_venc if  fecha_venc else None,
+            estado = estado
         )
 
         stock_a = request.data.get('stock')
         stock_min_a = request.data.get('stock_min')
 
-        if not stock or not stock_min:
+        if not stock_a or not stock_min_a:
             return Response({
                 'error': 'Los campos de stock no pueden estar vacios'
             }, status=status.HTTP_400_BAD_REQUEST)
@@ -237,13 +271,12 @@ class ProductosApiView(APIView):
         except ValueError:
             return Response({
                 'error': 'Los campos stock deben ser numericos'
-            })
+            },status=status.HTTP_400_BAD_REQUEST)
         
         if stock < 0 or stock_min <= 1:
             return Response({
                 'error': 'Stock no puede ser menor a cero y stock minimo debe ser mayor o igual a 1 '
             },status=status.HTTP_400_BAD_REQUEST)
-       
         Stock.objects.create(
             producto= producto,
             stock = stock,
@@ -259,28 +292,29 @@ class ProductosApiView(APIView):
                 'categoria': producto.categoria,
                 'precio_costo': producto.precio_costo,
                 'precio_venta':producto.precio_venta,
-                'fecha_venc': producto.fecha_venc 
+                'fecha_venc': producto.fecha_venc,
+                'estado': producto.estado
             }
         },status=status.HTTP_201_CREATED)
 
 #GET PARA CONSULTAR UN PRODUCTO EN ESPECIFICO POR ID ESTA FUNCION SERA EXCLUSIVA PARA ADMIN
 class ProductoDetalleApiView(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]# Cambiar por una funcion implementada para que sea administrador por rol
 
     def get(self,request, id):
     
         producto = get_object_or_404(Producto, id=id)
 
-        return Response({
-                  
+        return Response({ 
             'producto': producto.id,
             'nombre_producto': producto.nombre_producto,
             'marca': producto.marca,
             'categoria': producto.categoria,
             'precio_costo': producto.precio_costo,
             'precio_venta':producto.precio_venta,
-            'fecha_venc': producto.fecha_venc 
+            'fecha_venc': producto.fecha_venc,
+            'estado': producto.estado
                     
         },status=status.HTTP_200_OK)
 
@@ -294,18 +328,19 @@ class ProductoDetalleApiView(APIView):
         precio_costo = request.data.get('precio_costo')
         precio_venta = request.data.get('precio_venta')
         fecha_venc = request.data.get('fecha_venc')
+        estado = request.data.get('estado')
 
-        if not nombre_producto or not marca or not categoria or not precio_costo or not precio_venta or not fecha_venc is None:
+        if not nombre_producto or not marca or not categoria or not precio_costo or not precio_venta or not fecha_venc is None or estado is None:
             return Response({
                 'mensaje': 'Los campos no pueden estar vacios'
             }, status=status.HTTP_400_BAD_REQUEST)
 
         if precio_costo < 0 or precio_venta < 0:
-           return Response({
-               'error': 'los precios de venta y costo no pueden ser 0 en el registro'
-           }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'error': 'los precios de venta y costo no pueden ser 0 en el registro'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        if Producto.objects.filter(nombre_producto_iexact=nombre_producto).exists():
+        if Producto.objects.filter(nombre_producto__iexact=nombre_producto).exists():
             return Response({
                 'error': 'El producto no puede tener el mismo nombre'
             }, status=status.HTTP_400_BAD_REQUEST)
@@ -316,6 +351,7 @@ class ProductoDetalleApiView(APIView):
         producto.precio_costo = precio_costo
         producto.precio_venta = precio_venta
         producto.fecha_venc = fecha_venc 
+        producto.estado = estado
         producto.save()
 
         return Response({
@@ -326,7 +362,8 @@ class ProductoDetalleApiView(APIView):
             'categoria': producto.categoria,
             'precio_costo': producto.precio_costo,
             'precio_venta':producto.precio_venta,
-            'fecha_venc': producto.fecha_venc 
+            'fecha_venc': producto.fecha_venc,
+            'estado': producto.estado
             
         },status=status.HTTP_200_OK)
 
@@ -343,7 +380,7 @@ class ProductoDetalleApiView(APIView):
 
 class ClienteApiView(APIView):# implementar para registro /  hablar con tobal
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]# Cambiar por una funcion implementada para que sea administrador 
 
     # GET: FUNCION PARA VER A TODOS LOS CLIENTES REGISTRADOS EN EL SISTEMA O QUE SE ENCUENTREN RELACIONADOS 
     # A UNA VENTA O COMPRA, FUNCION EXCLUSIVA DE ADMIN 
@@ -355,10 +392,9 @@ class ClienteApiView(APIView):# implementar para registro /  hablar con tobal
 
         for cliente in clientes:
             clientes_datos.append({
-       
             'rut': cliente.rut, #Despues de rut ingresar contraseña he ingresar contra en models asi crear pasa a ser registro
             'nombre': cliente.nombre,
-            'correo':cliente.correo,
+            'email':cliente.usuario.email,
             'telefono': cliente.telefono,
             'direccion': cliente.direccion   
 
@@ -369,19 +405,19 @@ class ClienteApiView(APIView):# implementar para registro /  hablar con tobal
 
 class ClienteDetalleApiView(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]# Cambiar por una funcion implementada para que sea administrador 
 
     # GET: FUNCION PARA BUSCAR UN CLIENTE EN ESPECIFICO POR MEDIO DE LA ID 
 
     def get(self, request, id):
 
-        cliente = get_object_or_404(Producto, id=id)
+        cliente = get_object_or_404(Cliente, id=id)
 
         return Response({
             'cliente': cliente.id,
             'rut': cliente.rut,#La contraseña no deberia de verla el administrador por temas o conceptos de seguridad investigar como resguardar ese dato
             'nombre': cliente.nombre,
-            'correo':cliente.correo,
+            'email':cliente.usuario.email,
             'telefono': cliente.telefono,
             'direccion': cliente.direccion   
 
@@ -391,7 +427,7 @@ class ClienteDetalleApiView(APIView):
 
 class StockApiView(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]# Cambiar por una funcion implementada para que sea administrador 
     
 
     # GET: FUNCION PARA LISTAR TODOS LOS PRODUCTOS EN EL STOCK, 
@@ -417,7 +453,7 @@ class StockApiView(APIView):
 
 class StockDetalleApiView(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]# Cambiar por una funcion implementada para que sea administrador 
 
     # PUT: FUNCION PARA ACTUALIZAR O REPONER CANTIDADES DE LOS PRODUCTOS, 
     # FUNCION EXCLUSIVA DE ADMIN
@@ -430,7 +466,7 @@ class StockDetalleApiView(APIView):
         stock_min_a = request.data.get('stock_min')
 
 
-        if stock is None or stock_min is None:
+        if stock_a is None or stock_min_a is None:
                 return Response({
                     'error': 'Los campos de stock no pueden estar vacios'
                 }, status=status.HTTP_400_BAD_REQUEST)
@@ -465,7 +501,7 @@ class StockDetalleApiView(APIView):
 
 class VentaApiView(APIView):
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]# Cambiar por una funcion implementada para que sea administrador 
 
     # GET: FUNCION PARA VER LAS VENTAS GENERALES DE LOS PRODUCTOS, 
     # FUNCION EXCLUSIVA DE ADMIN 
@@ -495,7 +531,7 @@ class VentaApiView(APIView):
 class DetalleVentaApiView(APIView):
 
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]# Cambiar por una funcion implementada para que sea administrador 
 
     # GET: FUNCION PARA VER TODOS LOS DETALLES DE VENTAS DE LOS CLIENTES, 
     # FUNCION EXCLUSIVA DE ADMIN
@@ -530,43 +566,77 @@ class DetalleVentaApiView(APIView):
 
 
 # Funcion de registro para cliente 
-#class ResgistroApiView(APIView):
-    #permission_classes = [AllowAny]
-
+class ResgistroApiView(APIView):
+    permission_classes = [AllowAny]
+    # POST: FUNCION PARA QUE EL CLIENTE SE PUEDA REGISTRAR
     def post(self, request):
 
+        email = request.data.get('email')
+        password_plana = request.data.get('password')
         rut = request.data.get('rut')
         nombre = request.data.get('nombre')
-        correo = request.data.get('correo')
         telefono = request.data.get('telefono')
         direccion = request.data.get('direccion')
 
-        if not rut or not nombre or not correo or not telefono or not direccion:
+        if not email or not password_plana or not rut or not nombre or not telefono or not direccion:
             return Response({
-                'error': 'Los campos de cliente no pueden estar vacios'
+                'error': 'Los campos de cliente no pueden estar vacios, rellenalos'
             }, status=status.HTTP_400_BAD_REQUEST)
-
-        if Cliente.objects.filter(rut_iexact=rut).exists():
+        # CON UN LEN RECORREMOS EL ESCRITO Y COMPROBAMOS QUE LA CANTIDAD DE CARACTERES NO SEA MENOR A 10
+        if len(password_plana) < 10:
             return Response({
-                'error': 'Ese rut ya existe'
+                'error': 'La contraseña debe conetener al menos 10 caracteres'
             },status=status.HTTP_400_BAD_REQUEST)
 
-        #Crear contraseña 
+        # CON EL TRY Y EXCEPT VALIDAMOS QUE EL USUARIO NO INGRESE CONTRASEÑAS POCO SEGURAS ADEMAS DE 
+        try:
+            validate_password(password_plana)
 
-        cliente = Cliente.objects.create(
-            rut = rut,
-            nombre = nombre,
-            correo = correo,
-            telefono = telefono,
-            direccion= direccion,
-            
-        )
+        except Exception:
+            return Response({
+                'error': 'La contraseña es muy corta o su combinacion es insegura'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response({
-    
-            'rut': cliente.rut, #Despues de rut ingresar contraseña he ingresar contra en models asi crear pasa a ser registro hacer otro login para usuario o construir una api adicional para registro y aplicar ahi el post de crear usuario 
-            'nombre': cliente.nombre,
-            'telefono': cliente.telefono,
-            'direccion': cliente.direccion   
-    
-            }, status=status.HTTP_200_OK)
+        if Cliente.objects.filter(rut__iexact=rut).exists():
+            return Response({
+                'error': 'Ese rut ya existe en el sistema'
+            },status=status.HTTP_400_BAD_REQUEST)
+        
+        if Usuario.objects.filter(email__iexact=email).exists():
+            return Response({
+                'error': 'Ese correo ya se encuentra registrado'
+            },status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            with transaction.atomic():  
+        # VALIDAMOS LA CONTRASEÑA CON LA CONFIGURACION DE MAKE_PASSWORD UNA FUNCION QUE PROTEJE LAS CONTRASEÑAS EN SHA256 Y PBKDF2 Y NO SE ALMACENARA EN TEXTO PLANO
+                usuario = Usuario.objects.create_user(
+                    username=email,
+                    email=email,
+                    password=password_plana,
+                    roles='cliente'
+                )
+
+                cliente = Cliente.objects.create(
+                    usuario = usuario,
+                    rut = rut,
+                    nombre = nombre,
+                    telefono = telefono,
+                    direccion= direccion,
+                    
+                )
+            return Response({
+                'mensaje': 'Cliente registrado exitosamente',
+                'rut': cliente.rut, 
+                'nombre': cliente.nombre,
+                'email': cliente.usuario.email,
+                'telefono': cliente.telefono,
+                'direccion': cliente.direccion
+                # a password--> por temas de seguridad se excluye para no mostrar la contraseña ni de manera hasheada
+        
+                }, status=status.HTTP_201_CREATED)
+        
+        except Exception:
+            return Response(
+                {'error': 'Ocurrió un error inesperado al registrar el cliente.'}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR)
