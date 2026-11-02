@@ -64,6 +64,11 @@ class Venta(models.Model):
         ('Credito', 'CREDITO')
     ] # Se aplico una tupla para poder seleccionar una opcion en vez de escribirla directamente podra selecionarla por medio de <select><options> con un desplegable en html
     metodo_pago = models.CharField(max_length=20, choices=t_metodo_pago)
+    t_entrega = [
+        ('Delivery', 'ENTREGA A DOMICILIO'),
+        ('Presencial','RETIRO EN SUCURSAL' )
+    ]
+    entrega = models.CharField(max_length=20, choices=t_entrega)
 
 class DetalleVenta(models.Model):
     venta = models.ForeignKey(Venta, on_delete=models.CASCADE)
