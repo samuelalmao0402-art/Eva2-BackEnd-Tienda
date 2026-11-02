@@ -216,7 +216,8 @@ class ProductosApiView(APIView):
                 'categoria': producto.categoria,
                 'precio_costo': producto.precio_costo,
                 'precio_venta':producto.precio_venta,
-                'fecha_venc': producto.fecha_venc
+                'fecha_venc': producto.fecha_venc,
+                'estado': producto.estado
 
             })
 
@@ -640,3 +641,19 @@ class ResgistroApiView(APIView):
             return Response(
                 {'error': 'Ocurrió un error inesperado al registrar el cliente.'}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+#class CatalogoProductoApiView --> productos de manera general 
+
+# class CatalogoDetalleApiView --> buscar un producto especifico , crear el html adicional donde se pueda buscar el producto por su nombre 
+
+# class CarritoApiView --> para ver el carrito de compras 
+
+# class ItenCarritoApiView --> pensar que colocar aca pero podria ser las compras de varios productos 
+
+# class RegistrarCompraApiView --> la compra de un producto 
+
+#class DetalleCompraApiView --> ver la compra o compras realizada 
+
+# class FinalizarCompraApiView --> Para finalizar las compras de los porductos 
+
