@@ -4,20 +4,41 @@ from django.db import models
 # Create your models here.
 # Creamos la Tabla cliente para que llevar un registro de los clientes que han realizado una compra
 # Consultar a tobal si le gusta ?
-
 class Usuario(AbstractUser):
-    # Campo opcional para distinguir roles visualmente si lo necesitas
     Roles = (
         ('admin', 'Administrador'),
         ('cliente', 'Cliente'),
     )
     roles = models.CharField(max_length=20, choices=Roles, default='cliente')
     email = models.EmailField(unique=True)
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username'] # Requerido por el comando createsuperuser de Django
+    
+    # Campos adicionales necesarios para el registro y perfil de los clientes
+    rut = models.CharField(max_length=12, unique=True, null=True, blank=True)
+    telefono = models.CharField(max_length=15, null=True, blank=True)
+    direccion = models.CharField(max_length=255, null=True, blank=True)
 
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']  # Requerido por el comando createsuperuser de Django
+
+    # Solución obligatoria para evitar el choque de relaciones inversas con auth.User
+    groups = models.ManyToManyField(
+        'auth.Group',
+        verbose_name='groups',
+        blank=True,
+        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
+        related_name='usuario_set',
+        related_query_name='usuario',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        verbose_name='user permissions',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        related_name='usuario_permissions_set',
+        related_query_name='usuario',
+    )
 class Cliente(models.Model):# Separamos cliente y usuario con una relacion de uno a uno cosa de que un usuario tenga un solo perfil cliente y no muchos por ello no se uso foreinkey
-    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='perfil')
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE, null=True, blank=True)
     rut = models.CharField(max_length=10, unique=True)
     nombre = models.CharField(max_length=30)
     telefono = models.CharField(max_length=20)

@@ -1,0 +1,238 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Huellitas & Cía.</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome (Iconos de Mascotas) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- ESTILOS TEMÁTICOS TIENDA DE MASCOTAS --- */
+        body {
+            /* Imagen de fondo desde static */
+            background-image: url('{% static "img/fondo_mascotas.jpg" %}');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-color: #fdf8f5; 
+        }
+        .navbar-pet { background-color: #ff7b54; } 
+        .card-pet { 
+            border-radius: 1.5rem; 
+            border: none; 
+            border-top: 8px solid #ff7b54;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+        .btn-pet { 
+            background-color: #ff7b54; 
+            color: white; 
+            border: none; 
+            border-radius: 0.5rem; 
+            transition: 0.3s; 
+        }
+        .btn-pet:hover { 
+            background-color: #f06a43; 
+            color: white; 
+            transform: translateY(-2px); 
+        }
+        .text-pet { color: #ff7b54; }
+        .form-select-pet:focus {
+            border-color: #ff7b54;
+            box-shadow: 0 0 0 0.25rem rgba(255, 123, 84, 0.25);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navegación Cliente Temática -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-pet mb-5 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="/">
+                <i class="fa-solid fa-paw me-2"></i>Huellitas & Cía.
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center fw-semibold">
+                    <li class="nav-item"><a class="nav-link" href="/catalogo/"><i class="fa-solid fa-store me-1"></i> Catálogo</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/carrito/"><i class="fa-solid fa-cart-shopping me-1"></i> Mi Carrito</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/compras/"><i class="fa-solid fa-bag-shopping me-1"></i> Mis Compras</a></li>
+                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                        <button class="btn btn-light btn-sm px-3 fw-bold text-pet rounded-pill" onclick="cerrarSesion()">
+                            <i class="fa-solid fa-right-from-bracket me-1"></i> Salir
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenedor Principal -->
+    <div class="container pb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                
+                <div class="card card-pet">
+                    <div class="card-header bg-transparent text-center py-4 border-0">
+                        <div class="d-inline-flex justify-content-center align-items-center bg-pet text-white rounded-circle mb-3 shadow-sm" style="width: 70px; height: 70px; font-size: 2rem;">
+                            <i class="fa-solid fa-cash-register"></i>
+                        </div>
+                        <h3 class="mb-0 fw-bold text-dark">Caja Registradora</h3>
+                        <p class="text-muted mb-0">¡Ya casi es tuyo! Completa los datos de pago.</p>
+                    </div>
+                    
+                    <div class="card-body p-4 p-md-5 pt-0">
+                        
+                        <!-- Resumen previo -->
+                        <div class="alert bg-light border border-2 text-center py-4 mb-4 rounded-4 shadow-sm">
+                            <span class="fs-6 text-muted fw-bold text-uppercase d-block mb-1">Total a Pagar</span>
+                            <strong class="display-5 text-pet fw-bold" id="total-pago">
+                                <i class="fa-solid fa-circle-notch fa-spin fs-4"></i>
+                            </strong>
+                        </div>
+
+                        <!-- Formulario de Pago -->
+                        <form id="form-checkout" onsubmit="procesarPago(event)">
+                            
+                            <div class="mb-4">
+                                <label for="metodo_pago" class="form-label fw-bold text-secondary"><i class="fa-solid fa-wallet me-2 text-pet"></i>Método de Pago</label>
+                                <select class="form-select form-select-lg form-select-pet shadow-sm rounded-3" id="metodo_pago" required>
+                                    <option value="" disabled selected>Seleccione cómo desea pagar...</option>
+                                    <option value="Debito">💳 Tarjeta de Débito</option>
+                                    <option value="Credito">💳 Tarjeta de Crédito</option>
+                                    <option value="Transferencia">🏦 Transferencia Bancaria</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-5">
+                                <label for="entrega" class="form-label fw-bold text-secondary"><i class="fa-solid fa-truck-fast me-2 text-pet"></i>Tipo de Entrega</label>
+                                <select class="form-select form-select-lg form-select-pet shadow-sm rounded-3" id="entrega" required>
+                                    <option value="" disabled selected>Seleccione cómo recibirá sus productos...</option>
+                                    <option value="Delivery">🛵 Entrega a Domicilio (Delivery)</option>
+                                    <option value="Presencial">🏪 Retiro en Sucursal (Presencial)</option>
+                                </select>
+                            </div>
+
+                            <div class="d-grid gap-3">
+                                <button type="submit" class="btn btn-pet btn-lg fw-bold py-3 shadow-sm" id="btn-confirmar">
+                                    <i class="fa-solid fa-check-circle me-2"></i> Confirmar y Pagar
+                                </button>
+                                <a href="/carrito/" class="btn btn-light btn-lg border fw-bold py-3 text-secondary">
+                                    <i class="fa-solid fa-arrow-left me-2"></i> Volver al Carrito
+                                </a>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- Lógica de conexión con la API -->
+    <script>
+        const token = localStorage.getItem('token');
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!token) {
+                alert("Debes iniciar sesión.");
+                window.location.href = '/login/';
+                return;
+            }
+            cargarResumen();
+        });
+
+        async function cargarResumen() {
+            try {
+                const response = await fetch('/api/carrito/', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Token ${token}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.items.length === 0) {
+                    alert("Tu carrito está vacío.");
+                    window.location.href = '/catalogo/';
+                    return;
+                }
+
+                // Formatear a pesos chilenos
+                document.getElementById('total-pago').innerText = `$${Number(data.total).toLocaleString('es-CL')}`;
+            } catch (error) {
+                console.error("Error al cargar el resumen:", error);
+                document.getElementById('total-pago').innerText = "Error";
+            }
+        }
+
+        async function procesarPago(event) {
+            event.preventDefault(); 
+
+            const metodoPago = document.getElementById('metodo_pago').value;
+            const entrega = document.getElementById('entrega').value;
+            const btn = document.getElementById('btn-confirmar');
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Procesando pago...';
+
+            try {
+                const resRegistro = await fetch('/api/registrocompra/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${token}`
+                    },
+                    body: JSON.stringify({
+                        metodo_pago: metodoPago,
+                        entrega: entrega
+                    })
+                });
+
+                const dataRegistro = await resRegistro.json();
+
+                if (!resRegistro.ok) {
+                    throw new Error(dataRegistro.error || "Error al registrar la compra.");
+                }
+
+                const ventaId = dataRegistro.venta_id;
+
+                const resFinalizar = await fetch(`/api/finalizarcompra/${ventaId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token ${token}`
+                    }
+                });
+
+                const dataFinalizar = await resFinalizar.json();
+
+                if (!resFinalizar.ok) {
+                    throw new Error(dataFinalizar.error || "Stock insuficiente o error al finalizar.");
+                }
+
+                window.location.href = `/compra_exitosa/${ventaId}/`;
+
+            } catch (error) {
+                console.error(error);
+                alert(error.message);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-check-circle me-2"></i> Confirmar y Pagar';
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('rol');
+            window.location.href = '/login/';
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

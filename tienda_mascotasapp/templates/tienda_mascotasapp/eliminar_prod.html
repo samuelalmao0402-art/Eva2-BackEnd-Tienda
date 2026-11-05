@@ -1,57 +1,125 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Eliminar Producto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eliminar Producto - Huellitas & Cía.</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome (Iconos de Mascotas) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
+        /* --- ESTILOS TEMÁTICOS TIENDA DE MASCOTAS --- */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
+            /* Imagen de fondo desde static */
+            background-image: url('{% static "img/fondo_mascotas.jpg" %}');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-color: #fdf8f5; 
         }
-        .contenedor {
-            width: 50%;
-            margin: 40px auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            text-align: center;
+        .navbar-pet { background-color: #ff7b54; } 
+        .card-pet { 
+            border-radius: 1.5rem; 
+            border: none; 
+            /* Borde rojo para indicar acción destructiva (Eliminar) */
+            border-top: 8px solid #dc3545;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            background-color: rgba(255, 255, 255, 0.95);
         }
-        .boton {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 15px;
-            background-color: #d9534f;
-            color: white;
-            text-decoration: none;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
+        .btn-pet { 
+            background-color: #ff7b54; 
+            color: white; 
+            border: none; 
+            border-radius: 0.5rem; 
+            transition: 0.3s; 
         }
-        .boton-cancelar {
-            background-color: #777;
+        .btn-pet:hover { 
+            background-color: #f06a43; 
+            color: white; 
+            transform: translateY(-2px); 
         }
+        .text-pet { color: #ff7b54; }
     </style>
 </head>
 <body>
 
-<div class="contenedor">
+    <!-- Navegación Admin Temática -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-pet mb-5 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="/inicio/">
+                <i class="fa-solid fa-paw me-2"></i>Huellitas & Cía. - Admin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center fw-semibold">
+                    <li class="nav-item"><a class="nav-link active" href="/ver_productos/"><i class="fa-solid fa-box me-1"></i> Productos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ver_clientes/"><i class="fa-solid fa-users me-1"></i> Clientes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ver_stock/"><i class="fa-solid fa-cubes me-1"></i> Stock</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ver_ventas/"><i class="fa-solid fa-receipt me-1"></i> Ventas</a></li>
+                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                        <button class="btn btn-light btn-sm px-3 fw-bold text-pet rounded-pill" onclick="cerrarSesion()">
+                            <i class="fa-solid fa-right-from-bracket me-1"></i> Salir
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-    <h1>🗑️ Eliminar Producto</h1>
+    <!-- Contenedor Principal -->
+    <div class="container pb-5 mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                
+                <div class="card card-pet text-center py-4">
+                    <div class="card-body p-4 p-md-5">
+                        
+                        <!-- Icono de Advertencia -->
+                        <div class="d-inline-flex justify-content-center align-items-center bg-danger bg-opacity-10 text-danger rounded-circle mb-4 shadow-sm" style="width: 90px; height: 90px; font-size: 3rem;">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </div>
+                        
+                        <h2 class="fw-bold text-dark mb-3">Eliminar Producto</h2>
+                        
+                        <div class="alert alert-light border shadow-sm rounded-4 p-4 mb-4">
+                            <p class="fs-5 text-secondary mb-0">¿Estás seguro de que deseas eliminar el producto <br><strong class="fs-4 text-dark">"{{ producto.nombre_producto }}"</strong>?</p>
+                        </div>
 
-    <!-- Corregimos 'nombre' por 'nombre_producto' -->
-    <p>¿Estás seguro de que deseas eliminar el producto <strong>"{{ producto.nombre_producto }}"</strong>?</p>
+                        <!-- Formulario original de Django -->
+                        <form method="POST" class="mt-4">
+                            {% csrf_token %}
+                            
+                            <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                                <a href="{% url 'inicio' %}" class="btn btn-light btn-lg border fw-bold px-5 text-secondary shadow-sm">
+                                    <i class="fa-solid fa-xmark me-2"></i> Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-danger btn-lg fw-bold px-5 shadow-sm">
+                                    <i class="fa-solid fa-check me-2"></i> Sí, Eliminar
+                                </button>
+                            </div>
+                        </form>
 
-    <form method="POST">
-        {% csrf_token %}
-        <button type="submit" class="boton">Sí, Eliminar</button>
-        
-        <!-- Cambiamos 'ver_prod' por 'inicio' para evitar el error -->
-        <a href="{% url 'inicio' %}" class="boton boton-cancelar">Cancelar</a>
-    </form>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
 
-</div>
-
+    <!-- Script de sesión para mantener la consistencia del Navbar -->
+    <script>
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('rol');
+            window.location.href = '/login/';
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

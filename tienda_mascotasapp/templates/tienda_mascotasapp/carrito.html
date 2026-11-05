@@ -1,0 +1,255 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Carrito - Huellitas & Cía.</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome (Iconos de Mascotas) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- ESTILOS TEMÁTICOS TIENDA DE MASCOTAS --- */
+        body {
+            /* Imagen de fondo desde static */
+            background-image: url('{% static "img/fondo_mascotas.jpg" %}');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-color: #fdf8f5; /* Color de respaldo */
+        }
+        .navbar-pet { background-color: #ff7b54; } 
+        .card-pet { 
+            border-radius: 1rem; 
+            border: none; 
+            border-top: 6px solid #ff7b54; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
+            /* Fondo blanco ligeramente transparente para mejorar la lectura */
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+        .btn-pet { 
+            background-color: #ff7b54; 
+            color: white; 
+            border: none; 
+            border-radius: 0.5rem; 
+            transition: 0.3s; 
+        }
+        .btn-pet:hover { 
+            background-color: #f06a43; 
+            color: white; 
+            transform: translateY(-2px); 
+        }
+        .text-pet { color: #ff7b54; }
+        .table th { border-bottom: 2px solid #ff7b54; color: #555; }
+        .table { background-color: transparent; }
+    </style>
+</head>
+<body>
+
+    <!-- Navegación Cliente Temática -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-pet mb-5 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="/">
+                <i class="fa-solid fa-paw me-2"></i>Huellitas & Cía.
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center fw-semibold">
+                    <li class="nav-item"><a class="nav-link" href="/catalogo/"><i class="fa-solid fa-store me-1"></i> Catálogo</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/carrito/"><i class="fa-solid fa-cart-shopping me-1"></i> Mi Carrito</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/compras/"><i class="fa-solid fa-bag-shopping me-1"></i> Mis Compras</a></li>
+                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                        <button class="btn btn-light btn-sm px-3 fw-bold text-pet rounded-pill" onclick="cerrarSesion()">
+                            <i class="fa-solid fa-right-from-bracket me-1"></i> Salir
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenedor Principal -->
+    <div class="container pb-5">
+        <div class="d-flex align-items-center mb-4">
+            <h2 class="fw-bold text-dark mb-0 bg-white px-4 py-2 rounded-4 shadow-sm">
+                <i class="fa-solid fa-cart-shopping text-pet me-3"></i>Mi Carrito de Compras
+            </h2>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <!-- Tabla del Carrito -->
+                <div class="card card-pet h-100 overflow-hidden">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0 text-center align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-start ps-4 py-3 bg-light">Producto</th>
+                                        <th class="py-3 bg-light">Precio Unitario</th>
+                                        <th class="py-3 bg-light">Cantidad</th>
+                                        <th class="py-3 bg-light">Subtotal</th>
+                                        <th class="pe-4 py-3 bg-light">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="carrito-body">
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5">
+                                            <div class="spinner-border text-pet" role="status">
+                                                <span class="visually-hidden">Cargando...</span>
+                                            </div>
+                                            <p class="text-muted mt-2 mb-0">Cargando tus productos...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen de Compra -->
+            <div class="col-lg-4">
+                <div class="card card-pet">
+                    <div class="card-header bg-transparent py-3 border-0 rounded-top-4">
+                        <h5 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-file-invoice-dollar text-pet me-2"></i>Resumen de Compra</h5>
+                    </div>
+                    <div class="card-body p-4 bg-light bg-opacity-75 rounded-bottom-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom border-2">
+                            <span class="text-muted fw-bold text-uppercase">Total a pagar:</span>
+                            <strong id="total-carrito" class="fs-2 text-dark">$0</strong>
+                        </div>
+                        
+                        <button class="btn btn-pet w-100 btn-lg fw-bold py-3 shadow-sm" id="btn-pagar" onclick="irAlCheckout()" disabled>
+                            <i class="fa-solid fa-credit-card me-2"></i> Proceder al Pago
+                        </button>
+                        
+                        <a href="/catalogo/" class="btn btn-outline-secondary w-100 mt-3 rounded-3 py-2 fw-bold bg-white">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Seguir Comprando
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lógica de conexión con la API -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarCarrito();
+        });
+
+        async function cargarCarrito() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("Debes iniciar sesión para ver tu carrito.");
+                window.location.href = '/login/';
+                return;
+            }
+
+            const tbody = document.getElementById('carrito-body');
+            const totalElement = document.getElementById('total-carrito');
+            const btnPagar = document.getElementById('btn-pagar');
+
+            try {
+                const response = await fetch('/api/carrito/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Token ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error("Error al obtener el carrito");
+                }
+
+                const data = await response.json();
+                tbody.innerHTML = '';
+
+                if (data.items.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <i class="fa-solid fa-basket-shopping text-muted fs-1 mb-3 opacity-25"></i>
+                                <h5 class="text-muted">Tu carrito está vacío.</h5>
+                                <p class="text-muted small">¡Anímate a explorar nuestro catálogo!</p>
+                            </td>
+                        </tr>`;
+                    totalElement.innerText = '$0';
+                    btnPagar.disabled = true;
+                    return;
+                }
+
+                btnPagar.disabled = false;
+                // Formatear el total con separador de miles
+                totalElement.innerText = `$${Number(data.total).toLocaleString('es-CL')}`;
+
+                // Renderizar cada ítem del carrito
+                data.items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="align-middle text-start ps-4 fw-bold">
+                            <i class="fa-solid fa-paw text-pet opacity-50 me-2"></i>${item.nombre_producto}
+                        </td>
+                        <td class="align-middle text-muted fw-semibold">$${Number(item.precio_unitario).toLocaleString('es-CL')}</td>
+                        <td class="align-middle">
+                            <span class="badge bg-white text-dark border shadow-sm fs-6 px-3 py-2">${item.cantidad_compra}</span>
+                        </td>
+                        <td class="align-middle fw-bold text-success fs-5">$${Number(item.subtotal).toLocaleString('es-CL')}</td>
+                        <td class="align-middle pe-4">
+                            <button class="btn btn-sm btn-outline-danger rounded-circle p-2 lh-1 shadow-sm" title="Eliminar" onclick="eliminarItem(${item.item_id})">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error(error);
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-5"><i class="fa-solid fa-triangle-exclamation fs-1 mb-2"></i><br>Error de conexión al cargar el carrito.</td></tr>';
+            }
+        }
+
+        async function eliminarItem(itemId) {
+            const token = localStorage.getItem('token');
+            if (confirm("¿Estás seguro de eliminar este producto del carrito?")) {
+                try {
+                    const response = await fetch(`/api/carrito/items/${itemId}/`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Token ${token}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        cargarCarrito(); 
+                    } else {
+                        const data = await response.json();
+                        alert(`Error: ${data.error}`);
+                    }
+                } catch (error) {
+                    console.error("Error al eliminar:", error);
+                    alert("Ocurrió un error al intentar eliminar el producto.");
+                }
+            }
+        }
+
+        function irAlCheckout() {
+            window.location.href = '/checkout/';
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('rol');
+            window.location.href = '/login/';
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

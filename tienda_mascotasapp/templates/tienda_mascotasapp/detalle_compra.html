@@ -1,0 +1,202 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Compra - Huellitas & Cía.</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome (Iconos de Mascotas) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- ESTILOS TEMÁTICOS TIENDA DE MASCOTAS --- */
+        body {
+            /* Imagen de fondo desde static */
+            background-image: url('{% static "img/fondo_mascotas.jpg" %}');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-color: #fdf8f5; 
+        }
+        .navbar-pet { background-color: #ff7b54; } 
+        .card-pet { 
+            border-radius: 1.5rem; 
+            border: none; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+        .btn-pet { 
+            background-color: #ff7b54; 
+            color: white; 
+            border: none; 
+            border-radius: 0.5rem; 
+            transition: 0.3s; 
+        }
+        .btn-pet:hover { 
+            background-color: #f06a43; 
+            color: white; 
+            transform: translateY(-2px); 
+        }
+        .text-pet { color: #ff7b54; }
+    </style>
+</head>
+<body>
+
+    <!-- Navegación Cliente Temática -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-pet mb-5 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="/">
+                <i class="fa-solid fa-paw me-2"></i>Huellitas & Cía.
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center fw-semibold">
+                    <li class="nav-item"><a class="nav-link" href="/catalogo/"><i class="fa-solid fa-store me-1"></i> Catálogo</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/carrito/"><i class="fa-solid fa-cart-shopping me-1"></i> Mi Carrito</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/compras/"><i class="fa-solid fa-bag-shopping me-1"></i> Mis Compras</a></li>
+                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                        <button class="btn btn-light btn-sm px-3 fw-bold text-pet rounded-pill" onclick="cerrarSesion()">
+                            <i class="fa-solid fa-right-from-bracket me-1"></i> Salir
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4 pb-5">
+        
+        <!-- Cabecera -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 bg-white bg-opacity-90 p-4 rounded-4 shadow-sm">
+            <h2 class="fw-bold text-dark mb-3 mb-md-0">
+                <i class="fa-solid fa-box-open text-pet me-3"></i>Detalle de tu Orden #<span id="orden-id" class="text-pet">{{ venta_id }}</span>
+            </h2>
+            <a href="/compras/" class="btn btn-outline-secondary fw-bold rounded-pill px-4">
+                <i class="fa-solid fa-arrow-left me-2"></i>Volver a Mis Compras
+            </a>
+        </div>
+
+        <!-- Tarjeta de Resumen -->
+        <div class="card card-pet mb-4 border-top border-pet" style="border-top-width: 6px;">
+            <div class="card-body p-4">
+                <div class="row align-items-center text-center text-md-start g-4">
+                    <div class="col-md-4 border-end-md">
+                        <p class="mb-1 text-muted fw-bold"><i class="fa-regular fa-calendar-check me-2"></i>Fecha de Compra</p>
+                        <strong id="fecha-compra" class="fs-5 text-dark">Cargando...</strong>
+                    </div>
+                    <div class="col-md-4 border-end-md">
+                        <p class="mb-1 text-muted fw-bold"><i class="fa-solid fa-truck-fast me-2"></i>Método y Envío</p>
+                        <strong id="metodo-pago" class="text-dark">Cargando...</strong><br>
+                        <span class="badge bg-pet mt-2 px-3 py-2 rounded-pill shadow-sm" id="entrega">Cargando...</span>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <small class="text-muted fw-bold text-uppercase d-block mb-1">Total Pagado</small>
+                        <h3 class="text-success fw-bold mb-0" id="total-compra">$0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Detalles -->
+        <div class="card card-pet overflow-hidden">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 text-center align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-start ps-4 py-3 bg-light">Producto</th>
+                                <th class="py-3 bg-light">Precio Unitario</th>
+                                <th class="py-3 bg-light">Cantidad</th>
+                                <th class="pe-4 py-3 bg-light text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detalles-body">
+                            <tr>
+                                <td colspan="4" class="py-5 text-center">
+                                    <div class="spinner-border text-pet" role="status">
+                                        <span class="visually-hidden">Cargando detalles...</span>
+                                    </div>
+                                    <p class="text-muted mt-2 mb-0">Revisando la caja...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarDetalleCompra();
+        });
+
+        async function cargarDetalleCompra() {
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                window.location.href = '/login/';
+                return;
+            }
+
+            const ventaId = "{{ venta_id }}";
+            const tbody = document.getElementById('detalles-body');
+
+            try {
+                const response = await fetch(`/api/detallecompra/${ventaId}/`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Token ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error("No se pudo cargar el detalle de la compra.");
+                }
+
+                const data = await response.json();
+
+                // Llenamos la cabecera
+                document.getElementById('fecha-compra').innerText = data.fecha;
+                document.getElementById('metodo-pago').innerText = data.metodo_pago;
+                document.getElementById('entrega').innerText = data.entrega;
+                document.getElementById('total-compra').innerText = `$${Number(data.total_venta || data.total).toLocaleString('es-CL')}`;
+
+                // Llenamos la tabla
+                tbody.innerHTML = '';
+                data.detalles.forEach(item => {
+                    const precioU = Number(item.precio_unitario);
+                    const subtotal = Number(item.subtotal);
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="text-start ps-4 py-3 fw-bold text-dark">
+                            <i class="fa-solid fa-bone text-pet opacity-50 me-2"></i>${item.producto_nombre || item.producto}
+                        </td>
+                        <td class="py-3 text-muted">$${precioU.toLocaleString('es-CL')}</td>
+                        <td class="py-3">
+                            <span class="badge bg-white text-dark border shadow-sm fs-6 px-3 py-2">${item.cantidad_producto || item.cantidad}</span>
+                        </td>
+                        <td class="pe-4 fw-bold text-success text-end py-3 fs-5">$${subtotal.toLocaleString('es-CL')}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error(error);
+                tbody.innerHTML = '<tr><td colspan="4" class="text-danger py-5"><i class="fa-solid fa-triangle-exclamation me-2"></i>Error al cargar los productos de esta compra.</td></tr>';
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('rol');
+            window.location.href = '/login/';
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

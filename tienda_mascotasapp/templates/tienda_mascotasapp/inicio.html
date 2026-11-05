@@ -1,112 +1,194 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Tienda Mascotas - Inicio</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Huellitas & Cía.</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome (Iconos de Mascotas) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
+        /* --- ESTILOS TEMÁTICOS TIENDA DE MASCOTAS --- */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
+            /* Imagen de fondo desde static */
+            background-image: url('{% static "img/fondo_mascotas.jpg" %}');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-color: #fdf8f5; 
         }
-        .contenedor {
-            width: 80%;
-            margin: 40px auto;
+        .navbar-pet { background-color: #ff7b54; } 
+        .card-pet { 
+            border-radius: 1.5rem; 
+            border: none; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
+            background-color: rgba(255, 255, 255, 0.95);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        h1, h2 {
-            text-align: center;
+        .card-pet:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
         }
-        .acciones {
-            text-align: center;
-            margin-bottom: 30px;
+        .text-pet { color: #ff7b54; }
+        .bg-pet { background-color: #ff7b54; }
+        .btn-pet { 
+            background-color: #ff7b54; 
+            color: white; 
+            border: none; 
+            border-radius: 0.5rem; 
+            transition: 0.3s; 
         }
-        .boton {
-            display: inline-block;
-            padding: 10px 15px;
-            background-color: #333;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin: 5px;
+        .btn-pet:hover { 
+            background-color: #f06a43; 
+            color: white; 
+            transform: translateY(-2px); 
         }
-        .tarjeta {
-            background-color: white;
-            padding: 20px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            border-left: 5px solid #008CBA; /* Borde azul para clientes */
-        }
-        .tarjeta-producto {
-            border-left: 5px solid #FF9800; /* Borde naranja para productos */
-        }
-        .tarjeta h3 {
-            margin-top: 0;
-        }
-        .botones {
-            margin-top: 15px;
-        }
-        .botones a {
-            margin-right: 10px;
-            text-decoration: none;
-        }
+        
+        /* Colores específicos para los módulos del Dashboard */
+        .icon-productos { background-color: #e3f2fd; color: #0d6efd; }
+        .icon-stock { background-color: #fff3cd; color: #ffc107; }
+        .icon-ventas { background-color: #d1e7dd; color: #198754; }
+        .icon-clientes { background-color: #cff4fc; color: #0dcaf0; }
     </style>
 </head>
 <body>
 
-<div class="contenedor">
+    <!-- Navegación Admin Temática -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-pet mb-5 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="/inicio/">
+                <i class="fa-solid fa-paw me-2"></i>Huellitas & Cía. - Admin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center fw-semibold">
+                    <li class="nav-item"><a class="nav-link" href="/ver_productos/"><i class="fa-solid fa-box me-1"></i> Productos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ver_clientes/"><i class="fa-solid fa-users me-1"></i> Clientes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ver_stock/"><i class="fa-solid fa-cubes me-1"></i> Stock</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ver_ventas/"><i class="fa-solid fa-receipt me-1"></i> Ventas</a></li>
+                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                        <button class="btn btn-light btn-sm px-3 fw-bold text-pet rounded-pill" onclick="cerrarSesion()">
+                            <i class="fa-solid fa-right-from-bracket me-1"></i> Salir
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-    <h1>🐾 Tienda Mascotas</h1>
-
-    <!-- Botones de Acción -->
-    <div class="acciones">
-        <a href="{% url 'ingresar_prod' %}" class="boton">➕ Ingresar Producto</a>
-        <a href="{% url 'ingresar_cli' %}" class="boton">👤 Ingresar Cliente</a>
-        <a href="{% url 'lstock' %}" class="boton">📋 Listar Stock</a>
+    <div class="container pb-5">
         
-        <!-- NUEVOS BOTONES DE VENTAS -->
-        <a href="{% url 'registrar_venta' %}" class="boton" style="background-color: #4CAF50;">🛒 Nueva Venta</a>
-        <a href="{% url 'ver_ventas' %}" class="boton" style="background-color: #2196F3;">🧾 Historial de Ventas</a>
+        <!-- Cabecera del Dashboard -->
+        <div class="row mb-5 justify-content-center">
+            <div class="col-md-10 text-center bg-white bg-opacity-90 p-5 rounded-4 shadow-sm">
+                <h1 class="display-5 fw-bold text-dark mb-3"><i class="fa-solid fa-house-chimney text-pet me-3"></i>Panel de Control</h1>
+                <p class="lead text-muted mb-0">Selecciona un módulo para gestionar la tienda de mascotas.</p>
+            </div>
+        </div>
+
+        <!-- Grilla de Módulos -->
+        <div class="row g-4 justify-content-center">
+            
+            <!-- Tarjeta Productos -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card card-pet h-100 border-top border-primary" style="border-top-width: 6px;">
+                    <div class="card-body text-center p-4 d-flex flex-column">
+                        <div class="d-inline-flex justify-content-center align-items-center rounded-circle icon-productos mb-4 mx-auto" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                            <i class="fa-solid fa-boxes-stacked"></i>
+                        </div>
+                        <h4 class="card-title fw-bold text-dark">Productos</h4>
+                        <p class="card-text text-muted mb-4">Añade, edita y elimina productos del catálogo.</p>
+                        <a href="/ver_productos/" class="btn btn-primary w-100 mt-auto fw-bold py-2 shadow-sm rounded-pill">Gestionar Productos</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta Stock -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card card-pet h-100 border-top border-warning" style="border-top-width: 6px;">
+                    <div class="card-body text-center p-4 d-flex flex-column">
+                        <div class="d-inline-flex justify-content-center align-items-center rounded-circle icon-stock mb-4 mx-auto" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                            <i class="fa-solid fa-cubes-stacked"></i>
+                        </div>
+                        <h4 class="card-title fw-bold text-dark">Control de Stock</h4>
+                        <p class="card-text text-muted mb-4">Actualiza el inventario y revisa el stock mínimo.</p>
+                        <a href="/ver_stock/" class="btn btn-warning w-100 mt-auto fw-bold py-2 shadow-sm rounded-pill text-dark">Gestionar Stock</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta Ventas -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card card-pet h-100 border-top border-success" style="border-top-width: 6px;">
+                    <div class="card-body text-center p-4 d-flex flex-column">
+                        <div class="d-inline-flex justify-content-center align-items-center rounded-circle icon-ventas mb-4 mx-auto" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                        </div>
+                        <h4 class="card-title fw-bold text-dark">Ventas</h4>
+                        <p class="card-text text-muted mb-4">Revisa el historial de compras de los clientes.</p>
+                        <a href="/ver_ventas/" class="btn btn-success w-100 mt-auto fw-bold py-2 shadow-sm rounded-pill">Ver Historial</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tarjeta Clientes -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card card-pet h-100 border-top border-info" style="border-top-width: 6px;">
+                    <div class="card-body text-center p-4 d-flex flex-column">
+                        <div class="d-inline-flex justify-content-center align-items-center rounded-circle icon-clientes mb-4 mx-auto" style="width: 80px; height: 80px; font-size: 2.5rem;">
+                            <i class="fa-solid fa-users-gear"></i>
+                        </div>
+                        <h4 class="card-title fw-bold text-dark">Clientes</h4>
+                        <p class="card-text text-muted mb-4">Consulta la base de datos de usuarios registrados.</p>
+                        <a href="/ver_clientes/" class="btn btn-info w-100 mt-auto fw-bold py-2 shadow-sm rounded-pill text-white">Ver Clientes</a>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
     </div>
 
-    <!-- SECCIÓN 1: PRODUCTOS -->
-    <h2>📦 Resumen de Productos</h2>
+    <!-- Lógica de Seguridad -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            verificarAccesoAdmin();
+        });
 
-    {% for p in producto %}
-        <div class="tarjeta tarjeta-producto">
-            <h3>{{ p.nombre_producto }}</h3>
-            <p><strong>Marca:</strong> {{ p.marca }}</p>
-            <p><strong>Precio Venta:</strong> ${{ p.precio_venta }}</p>
-            
-            <div class="botones">
-                <a href="{% url 'ver_prod' p.id %}">👁️ Ver Detalle</a>
-                <a href="{% url 'editar_prod' p.id %}">✏️ Editar</a>
-                <a href="{% url 'eliminar_prod' p.id %}">🗑️ Eliminar</a>
-            </div>
-        </div>
-    {% empty %}
-        <p style="text-align: center;">No existen productos registrados en este momento.</p>
-    {% endfor %}
+        function verificarAccesoAdmin() {
+            const token = localStorage.getItem('token');
+            const rol = localStorage.getItem('rol');
 
-    <!-- SECCIÓN 2: CLIENTES -->
-    <h2 style="margin-top: 50px;">👥 Resumen de Clientes</h2>
+            // Si no hay token o el rol NO es admin, lo expulsamos al login
+            if (!token || rol !== 'admin') {
+                alert("Acceso denegado. Área exclusiva para administradores.");
+                window.location.href = '/login/';
+            }
+        }
 
-    {% for c in cliente %}
-        <div class="tarjeta">
-            <h3>{{ c.nombre }}</h3>
-            <p><strong>RUT:</strong> {{ c.rut }}</p>
-            <p><strong>Teléfono:</strong> {{ c.telefono }}</p>
-            <p><strong>Correo:</strong> {{ c.correo }}</p>
-            
-            <div class="botones">
-                <a href="{% url 'ver_cli' c.id %}">👁️ Ver Perfil</a>
-            </div>
-        </div>
-    {% empty %}
-        <p style="text-align: center;">No existen clientes registrados en este momento.</p>
-    {% endfor %}
-
-</div>
-
+        async function cerrarSesion() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                try {
+                    await fetch('/api/logout/', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Token ${token}` }
+                    });
+                } catch (e) {
+                    console.error("Error al cerrar sesión en el backend", e);
+                }
+            }
+            // Limpiamos los datos locales y redirigimos
+            localStorage.removeItem('token');
+            localStorage.removeItem('rol');
+            window.location.href = '/login/';
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

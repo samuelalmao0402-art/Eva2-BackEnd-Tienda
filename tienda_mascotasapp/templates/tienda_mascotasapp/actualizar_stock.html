@@ -1,43 +1,219 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Actualizar Stock</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Actualizar Stock - Huellitas & Cía.</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome (Iconos de Mascotas) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
-        .contenedor { width: 50%; margin: 40px auto; background-color: white; padding: 30px; border-radius: 8px; }
-        h1 { text-align: center; }
-        label { display: block; margin-top: 15px; font-weight: bold; }
-        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        .boton { display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #333; color: white; text-decoration: none; border: none; border-radius: 5px; cursor: pointer; }
-        .acciones { text-align: center; }
+        /* --- ESTILOS TEMÁTICOS TIENDA DE MASCOTAS --- */
+        body {
+            /* Aquí aplicamos la imagen de fondo que guardaste en static/img/fondo_mascotas.jpg */
+            background-image: url('{% static "img/fondo_mascotas.jpg" %}');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-color: #fdf8f5; /* Color de respaldo */
+        }
+        .navbar-pet { background-color: #ff7b54; } 
+        .card-pet { 
+            border-radius: 1rem; 
+            border: none; 
+            border-top: 6px solid #ff7b54; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
+            /* Fondo blanco ligeramente transparente para que se vea el fondo pero no moleste la lectura */
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+        .btn-pet { 
+            background-color: #ff7b54; 
+            color: white; 
+            border: none; 
+            border-radius: 0.5rem; 
+            transition: 0.3s; 
+        }
+        .btn-pet:hover { 
+            background-color: #f06a43; 
+            color: white; 
+            transform: translateY(-2px); 
+        }
+        .icon-pet-bg { 
+            background-color: #ffeee6; 
+            color: #ff7b54; 
+            width: 70px; 
+            height: 70px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 50%; 
+            font-size: 2rem; 
+            margin: 0 auto 15px; 
+        }
+        .text-pet { color: #ff7b54; }
     </style>
 </head>
 <body>
 
-<div class="contenedor">
-
-    <h1> Actualizar Stock</h1>
-
-    <form method="POST">
-        {% csrf_token %}
-
-        <label>Producto a actualizar:</label>
-        <!-- Mostramos el nombre bloqueado para que el usuario sepa qué está actualizando -->
-        <input type="text" value="{{ stock.producto.nombre_producto }}" disabled style="background-color: #e9ecef; cursor: not-allowed;">
-
-        <label for="Cantidad">Nuevo Stock Total:</label>
-        <!-- name="Cantidad" es obligatorio para que views.py lo reconozca -->
-        <input type="number" id="Cantidad" name="Cantidad" value="{{ stock.stock }}" min="0" required>
-
-        <div class="acciones">
-            <button type="submit" class="boton"> Guardar Cambios</button>
-            <!-- Cambié el botón para que vuelva a la lista de stock en caso de cancelar -->
-            <a href="{% url 'lstock' %}" class="boton" style="background-color: #777;"> Cancelar</a>
+    <!-- Navegación Admin Temática -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-pet mb-5 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="/inicio/">
+                <i class="fa-solid fa-paw me-2"></i>Huellitas & Cía.
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav ms-auto align-items-center fw-semibold">
+                    <li class="nav-item"><a class="nav-link" href="/ver_productos/"><i class="fa-solid fa-box me-1"></i> Productos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ver_clientes/"><i class="fa-solid fa-users me-1"></i> Clientes</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/ver_stock/"><i class="fa-solid fa-cubes me-1"></i> Stock</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ver_ventas/"><i class="fa-solid fa-receipt me-1"></i> Ventas</a></li>
+                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                        <button class="btn btn-light btn-sm px-3 fw-bold text-pet rounded-pill" onclick="cerrarSesion()">
+                            <i class="fa-solid fa-right-from-bracket me-1"></i> Salir
+                        </button>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </form>
+    </nav>
 
-</div>
+    <div class="container pb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                
+                <div class="card card-pet">
+                    <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-3 border-0 rounded-top-4">
+                        <h5 class="mb-0 fw-bold text-dark">Reponer Inventario</h5>
+                        <a href="/ver_stock/" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                            <i class="fa-solid fa-xmark me-1"></i> Cancelar
+                        </a>
+                    </div>
+                    
+                    <div class="card-body p-4 pt-2">
+                        
+                        <!-- Resumen del Producto Actual -->
+                        <div class="text-center mb-4 p-3 bg-light rounded-4 border">
+                            <div class="icon-pet-bg shadow-sm">
+                                <i class="fa-solid fa-cat"></i>
+                            </div>
+                            <h4 id="nombre-producto" class="fw-bold text-dark mb-1">Cargando producto...</h4>
+                            <p class="mb-0 text-muted fs-5">Stock Actual: <strong id="stock-actual" class="text-pet fs-4">...</strong> unidades</p>
+                        </div>
 
+                        <!-- Formulario de Actualización -->
+                        <form id="form-stock" onsubmit="guardarNuevoStock(event)">
+                            <div class="mb-4">
+                                <label for="nuevo_stock" class="form-label fw-bold text-secondary"><i class="fa-solid fa-plus-minus me-1"></i> Nuevo Stock Total</label>
+                                <div class="input-group input-group-lg shadow-sm rounded-3 overflow-hidden">
+                                    <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-box-open text-muted"></i></span>
+                                    <input type="number" id="nuevo_stock" class="form-control border-start-0 border-end-0 text-center fw-bold" required min="0" placeholder="Ej: 50">
+                                    <span class="input-group-text bg-light text-muted border-start-0">un.</span>
+                                </div>
+                                <div class="form-text text-muted mt-2 text-center"><small>Ingresa la cantidad final que quedará en bodega.</small></div>
+                            </div>
+
+                            <button type="submit" id="btn-actualizar" class="btn btn-pet w-100 fs-5 fw-bold py-3 shadow-sm mt-2">
+                                <i class="fa-solid fa-bone me-2"></i> Actualizar Inventario
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- Lógica de conexión con la API -->
+    <script>
+        const token = localStorage.getItem('token');
+        const rol = localStorage.getItem('rol');
+        
+        const pathArray = window.location.pathname.split('/').filter(Boolean);
+        const stockId = pathArray[pathArray.length - 1]; 
+        
+        let stockData = {}; 
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!token || rol !== 'admin') {
+                alert("Acceso denegado.");
+                window.location.href = '/login/';
+                return;
+            }
+            cargarDatosStock();
+        });
+
+        async function cargarDatosStock() {
+            try {
+                const response = await fetch(`/api/stock/${stockId}/`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Token ${token}` }
+                });
+
+                if (!response.ok) throw new Error("No se pudo cargar el inventario.");
+
+                stockData = await response.json();
+
+                document.getElementById('nombre-producto').innerText = stockData.nombre_producto;
+                document.getElementById('stock-actual').innerText = stockData.stock;
+                document.getElementById('nuevo_stock').value = stockData.stock;
+
+            } catch (error) {
+                console.error(error);
+                alert("Error al cargar los datos del inventario.");
+                window.location.href = '/ver_stock/';
+            }
+        }
+
+        async function guardarNuevoStock(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('btn-actualizar');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Actualizando...';
+
+            const payload = {
+                stock: parseInt(document.getElementById('nuevo_stock').value),
+                stock_min: stockData.stock_min 
+            };
+
+            try {
+                const response = await fetch(`/api/stock/${stockId}/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    alert("¡Stock actualizado exitosamente!");
+                    window.location.href = '/ver_stock/';
+                } else {
+                    const data = await response.json();
+                    alert(`Error: ${data.error || 'No se pudo actualizar el stock.'}`);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-bone me-2"></i> Actualizar Inventario';
+                }
+            } catch (error) {
+                console.error("Error al actualizar:", error);
+                alert("Ocurrió un error al conectar con el servidor.");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-bone me-2"></i> Actualizar Inventario';
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('rol');
+            window.location.href = '/login/';
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>
+</html>s
