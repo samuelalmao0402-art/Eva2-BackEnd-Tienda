@@ -1,81 +1,213 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Detalle del Producto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario de Productos - Huellitas & Cía.</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome (Iconos de Mascotas) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
+        /* --- ESTILOS TEMÁTICOS TIENDA DE MASCOTAS --- */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
+            /* Imagen de fondo desde static */
+            background-image: url('{% static "img/fondo_mascotas.jpg" %}');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-color: #fdf8f5; 
         }
-        .contenedor {
-            width: 80%;
-            margin: 40px auto;
+        .navbar-pet { background-color: #ff7b54; } 
+        .card-pet { 
+            border-radius: 1.5rem; 
+            border: none; 
+            border-top: 8px solid #0d6efd; /* Borde azul para Productos */
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            background-color: rgba(255, 255, 255, 0.95);
         }
-        h1 {
-            text-align: center;
+        .btn-pet { 
+            background-color: #ff7b54; 
+            color: white; 
+            border: none; 
+            border-radius: 0.5rem; 
+            transition: 0.3s; 
         }
-        .acciones {
-            text-align: center;
-            margin-bottom: 30px;
+        .btn-pet:hover { 
+            background-color: #f06a43; 
+            color: white; 
+            transform: translateY(-2px); 
         }
-        .boton {
-            display: inline-block;
-            padding: 10px 15px;
-            background-color: #333;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-        .tarjeta {
-            background-color: white;
-            padding: 20px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-        }
-        .tarjeta h2 {
-            margin-top: 0;
-        }
-        .botones {
-            margin-top: 15px;
-        }
-        .botones a {
-            margin-right: 10px;
-            text-decoration: none;
-            background-color: #ddd;
-            padding: 5px 10px;
-            border-radius: 3px;
-            color: black;
-        }
+        .text-pet { color: #ff7b54; }
     </style>
 </head>
 <body>
 
-<div class="contenedor">
+    <!-- Navegación Admin Temática -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-pet mb-5 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="/inicio/">
+                <i class="fa-solid fa-paw me-2"></i>Huellitas & Cía. - Admin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center fw-semibold">
+                    <li class="nav-item"><a class="nav-link active" href="/ver_productos/"><i class="fa-solid fa-box me-1"></i> Productos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ver_clientes/"><i class="fa-solid fa-users me-1"></i> Clientes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ver_stock/"><i class="fa-solid fa-cubes me-1"></i> Stock</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ver_ventas/"><i class="fa-solid fa-receipt me-1"></i> Ventas</a></li>
+                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                        <button class="btn btn-light btn-sm px-3 fw-bold text-pet rounded-pill" onclick="cerrarSesion()">
+                            <i class="fa-solid fa-right-from-bracket me-1"></i> Salir
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-    <h1>🔍 Detalle del Producto</h1>
+    <div class="container pb-5">
+        
+        <!-- Cabecera -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 bg-white bg-opacity-90 p-4 rounded-4 shadow-sm">
+            <h2 class="fw-bold text-dark mb-3 mb-md-0">
+                <i class="fa-solid fa-boxes-stacked text-primary me-3"></i>Inventario de Productos
+            </h2>
+            <a href="/ingresar_producto/" class="btn btn-primary fw-bold rounded-pill px-4 shadow-sm">
+                <i class="fa-solid fa-plus-circle me-2"></i>Nuevo Producto
+            </a>
+        </div>
 
-    <div class="acciones">
-        <a href="{% url 'inicio' %}" class="boton">🏠 Volver al Inicio</a>
-    </div>
-
-    <div class="tarjeta">
-        <h2>{{ producto.nombre_producto }}</h2>
-        <p><strong>Marca:</strong> {{ producto.marca }}</p>
-        <p><strong>Categoría:</strong> {{ producto.categoria }}</p>
-        <p><strong>Precio Costo:</strong> ${{ producto.precio_costo }}</p>
-        <p><strong>Precio Venta:</strong> ${{ producto.precio_venta }}</p>
-        <p><strong>Fecha de Vencimiento:</strong> {% if producto.fecha_venc %}{{ producto.fecha_venc|date:'d/m/Y' }}{% else %}No aplica{% endif %}</p>
-
-        <div class="botones">
-            <a href="{% url 'editar_prod' producto.id %}">✏️ Editar</a>
-            <a href="{% url 'eliminar_prod' producto.id %}">🗑️ Eliminar</a>
+        <div class="card card-pet overflow-hidden">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle text-center mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="py-3 text-muted">ID</th>
+                                <th class="text-start py-3"><i class="fa-solid fa-tag me-1 text-muted"></i> Nombre</th>
+                                <th class="py-3"><i class="fa-solid fa-copyright me-1 text-muted"></i> Marca</th>
+                                <th class="py-3"><i class="fa-solid fa-layer-group me-1 text-muted"></i> Categoría</th>
+                                <th class="py-3"><i class="fa-solid fa-money-bill-wave me-1 text-muted"></i> Precio Venta</th>
+                                <th class="py-3">Estado</th>
+                                <th class="py-3 pe-4">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lista-productos">
+                            <tr>
+                                <td colspan="7" class="py-5">
+                                    <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+                                    <p class="mt-3 mb-0 text-muted">Cargando inventario de productos...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
-</div>
+    <!-- Lógica de conexión con la API -->
+    <script>
+        const token = localStorage.getItem('token');
+        const rol = localStorage.getItem('rol');
 
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!token || rol !== 'admin') {
+                alert("Acceso denegado. Área exclusiva para administradores.");
+                window.location.href = '/login/';
+                return;
+            }
+            cargarProductos();
+        });
+
+        async function cargarProductos() {
+            try {
+                const response = await fetch('/api/producto/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const productos = await response.json();
+                    const tbody = document.getElementById('lista-productos');
+                    tbody.innerHTML = '';
+
+                    if (productos.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="7" class="text-muted py-5"><i class="fa-solid fa-box-open fs-1 mb-3 opacity-25"></i><br>No hay productos registrados en el inventario.</td></tr>';
+                        return;
+                    }
+
+                    productos.forEach(p => {
+                        const estadoBadge = p.estado 
+                            ? '<span class="badge bg-success rounded-pill px-3 py-2 shadow-sm"><i class="fa-solid fa-check-circle me-1"></i>Activo</span>' 
+                            : '<span class="badge bg-secondary rounded-pill px-3 py-2 shadow-sm"><i class="fa-solid fa-minus-circle me-1"></i>Inactivo</span>';
+
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="fw-bold text-muted bg-light border-end">#${p.id}</td>
+                            <td class="text-start fw-bold text-dark py-3 ps-3">${p.nombre_producto}</td>
+                            <td class="text-secondary">${p.marca}</td>
+                            <td class="text-secondary"><span class="badge bg-light text-dark border px-2 py-1">${p.categoria}</span></td>
+                            <td class="fw-bold text-success">$${Number(p.precio_venta).toLocaleString('es-CL')}</td>
+                            <td>${estadoBadge}</td>
+                            <td class="pe-4">
+                                <a href="/actualizar_producto/${p.id}/" class="btn btn-sm btn-warning text-dark fw-bold shadow-sm me-1" title="Editar">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </a>
+                                <button onclick="eliminarProducto(${p.id})" class="btn btn-sm btn-danger fw-bold shadow-sm" title="Eliminar">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                } else {
+                    document.getElementById('lista-productos').innerHTML = '<tr><td colspan="7" class="text-danger py-5"><i class="fa-solid fa-triangle-exclamation me-2"></i>No se pudo cargar el inventario de productos.</td></tr>';
+                }
+            } catch (error) {
+                console.error("Error al cargar productos:", error);
+                document.getElementById('lista-productos').innerHTML = '<tr><td colspan="7" class="text-danger py-5"><i class="fa-solid fa-triangle-exclamation me-2"></i>Error de conexión con el servidor.</td></tr>';
+            }
+        }
+
+        async function eliminarProducto(id) {
+            if (confirm("¿Estás seguro de que deseas eliminar este producto permanentemente?")) {
+                try {
+                    const response = await fetch(`/api/producto/${id}/`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Token ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        alert("Producto eliminado correctamente.");
+                        cargarProductos(); // Recargar la tabla automáticamente
+                    } else {
+                        alert("Error al intentar eliminar el producto.");
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                }
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('rol');
+            window.location.href = '/login/';
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

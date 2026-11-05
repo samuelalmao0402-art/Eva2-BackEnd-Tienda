@@ -1,121 +1,223 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Detalle de Venta</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle de Venta - Huellitas & Cía.</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome (Iconos de Mascotas) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
+        /* --- ESTILOS TEMÁTICOS TIENDA DE MASCOTAS --- */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
+            /* Imagen de fondo desde static */
+            background-image: url('{% static "img/fondo_mascotas.jpg" %}');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-color: #fdf8f5; 
         }
-        .contenedor {
-            width: 50%;
-            margin: 40px auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        .navbar-pet { background-color: #ff7b54; } 
+        .card-pet { 
+            border-radius: 1.5rem; 
+            border: none; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            background-color: rgba(255, 255, 255, 0.95);
         }
-        h1 {
-            text-align: center;
-            color: #333;
-            border-bottom: 2px dashed #ccc;
-            padding-bottom: 15px;
+        .btn-pet { 
+            background-color: #ff7b54; 
+            color: white; 
+            border: none; 
+            border-radius: 0.5rem; 
+            transition: 0.3s; 
         }
-        .info-boleta {
-            background-color: #f9f9f9;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
+        .btn-pet:hover { 
+            background-color: #f06a43; 
+            color: white; 
+            transform: translateY(-2px); 
         }
-        .info-boleta p {
-            margin: 5px 0;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        .total {
-            text-align: right;
-            font-size: 1.5em;
-            color: #4CAF50;
-            font-weight: bold;
-        }
-        .acciones {
-            text-align: center;
-            margin-top: 30px;
-        }
-        .boton {
-            display: inline-block;
-            padding: 10px 15px;
-            background-color: #333;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin: 5px;
-        }
+        .text-pet { color: #ff7b54; }
     </style>
 </head>
 <body>
 
-<div class="contenedor">
+    <!-- Navegación Admin Temática -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-pet mb-5 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="/inicio/">
+                <i class="fa-solid fa-paw me-2"></i>Huellitas & Cía. - Admin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center fw-semibold">
+                    <li class="nav-item"><a class="nav-link" href="/ver_productos/"><i class="fa-solid fa-box me-1"></i> Productos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ver_clientes/"><i class="fa-solid fa-users me-1"></i> Clientes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ver_stock/"><i class="fa-solid fa-cubes me-1"></i> Stock</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="/ver_ventas/"><i class="fa-solid fa-receipt me-1"></i> Ventas</a></li>
+                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                        <button class="btn btn-light btn-sm px-3 fw-bold text-pet rounded-pill" onclick="cerrarSesion()">
+                            <i class="fa-solid fa-right-from-bracket me-1"></i> Salir
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-    <h1>🧾 Boleta #{{ venta.id }}</h1>
+    <div class="container pb-5">
+        
+        <!-- Cabecera -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 bg-white bg-opacity-90 p-4 rounded-4 shadow-sm">
+            <h2 class="fw-bold text-dark mb-3 mb-md-0">
+                <i class="fa-solid fa-file-invoice text-success me-3"></i>Detalle de la Venta #<span id="venta-id" class="text-success">{{ venta_id }}</span>
+            </h2>
+            <a href="/ver_ventas/" class="btn btn-outline-secondary fw-bold rounded-pill px-4">
+                <i class="fa-solid fa-arrow-left me-2"></i>Volver al Historial
+            </a>
+        </div>
 
-    <div class="info-boleta">
-        <p><strong>Fecha:</strong> {{ venta.fecha }}</p>
-        <p><strong>Cliente:</strong> {{ venta.cliente.nombre }}</p>
-        <p><strong>RUT:</strong> {{ venta.cliente.rut }}</p>
-        <p><strong>Método de Pago:</strong> {{ venta.metodo_pago }}</p>
+        <!-- Tarjeta de Información del Cliente -->
+        <div class="card card-pet mb-4 border-top border-success" style="border-top-width: 6px;">
+            <div class="card-body p-4 p-md-5">
+                <div class="row align-items-center g-4 text-center text-md-start">
+                    <div class="col-md-3 border-end-md">
+                        <p class="mb-1 text-muted fw-bold"><i class="fa-regular fa-calendar-check me-2"></i>Fecha de Emisión</p>
+                        <span id="fecha-venta" class="fs-5 text-dark fw-semibold">Cargando...</span>
+                    </div>
+                    <div class="col-md-3 border-end-md">
+                        <p class="mb-1 text-muted fw-bold"><i class="fa-solid fa-user me-2"></i>Cliente</p>
+                        <span id="cliente-nombre" class="fs-5 text-dark fw-bold d-block">Cargando...</span>
+                        <small id="cliente-rut" class="text-muted bg-light px-2 py-1 rounded border">...</small>
+                    </div>
+                    <div class="col-md-3 border-end-md">
+                        <p class="mb-1 text-muted fw-bold"><i class="fa-solid fa-wallet me-2"></i>Método de Pago</p>
+                        <span id="metodo-pago" class="badge bg-success px-3 py-2 rounded-pill shadow-sm fs-6 mt-1">Cargando...</span>
+                    </div>
+                    <div class="col-md-3 text-md-end">
+                        <small class="text-muted fw-bold text-uppercase d-block mb-1">Total Venta</small>
+                        <h3 class="text-success fw-bold mb-0" id="total-venta">$0</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjeta de Productos Comprados -->
+        <div class="card card-pet overflow-hidden">
+            <div class="card-header bg-light py-3 border-bottom">
+                <h5 class="mb-0 fw-bold text-secondary"><i class="fa-solid fa-box-open me-2"></i>Productos Comprados</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle text-center mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="text-start ps-4 py-3 text-muted">Producto</th>
+                                <th class="py-3 text-muted">Precio Unitario</th>
+                                <th class="py-3 text-muted">Cantidad</th>
+                                <th class="pe-4 py-3 text-end text-muted">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-detalles">
+                            <tr>
+                                <td colspan="4" class="py-5">
+                                    <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;">
+                                        <span class="visually-hidden">Cargando detalles...</span>
+                                    </div>
+                                    <p class="text-muted mt-3 mb-0">Recuperando detalles de la venta...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <h3>Productos Comprados:</h3>
+    <!-- Lógica de conexión con la API -->
+    <script>
+        const token = localStorage.getItem('token');
+        const rol = localStorage.getItem('rol');
+        
+        // Extraemos el ID de la venta desde la URL
+        const pathArray = window.location.pathname.split('/').filter(Boolean);
+        const ventaId = pathArray[pathArray.length - 1]; 
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!token || rol !== 'admin') {
+                alert("Acceso denegado. Área exclusiva para administradores.");
+                window.location.href = '/login/';
+                return;
+            }
+            
+            document.getElementById('venta-id').innerText = ventaId;
+            cargarDetalleVenta();
+        });
+
+        async function cargarDetalleVenta() {
+            const tbody = document.getElementById('tabla-detalles');
+
+            try {
+                const response = await fetch(`/api/venta/${ventaId}/`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Token ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error("No se pudo cargar el detalle de la venta.");
+                }
+
+                const data = await response.json();
+
+                // Formatear Total
+                const totalValor = Number(data.total || data.total_venta || 0);
+
+                // Llenamos la cabecera de datos
+                document.getElementById('fecha-venta').innerText = data.fecha || "Sin fecha";
+                document.getElementById('cliente-nombre').innerText = data.cliente_nombre || data.cliente || "Desconocido";
+                document.getElementById('cliente-rut').innerText = data.cliente_rut || "Sin RUT";
+                document.getElementById('metodo-pago').innerHTML = `<i class="fa-solid fa-check-circle me-1"></i>${data.metodo_pago || "No especificado"}`;
+                document.getElementById('total-venta').innerText = `$${totalValor.toLocaleString('es-CL')}`;
+
+                // Llenamos la tabla de productos
+                tbody.innerHTML = '';
+                
+                if (!data.detalles || data.detalles.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="py-5 text-muted"><i class="fa-solid fa-basket-shopping fs-1 mb-3 opacity-25"></i><br>No hay productos registrados en el detalle de esta venta.</td></tr>';
+                    return;
+                }
+
+                data.detalles.forEach(item => {
+                    const precioU = Number(item.precio_unitario || item.precio);
+                    const subtotal = Number(item.subtotal);
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="text-start ps-4 py-3 fw-bold text-dark"><i class="fa-solid fa-bone text-pet opacity-50 me-2"></i>${item.producto_nombre || item.producto}</td>
+                        <td class="py-3 text-muted">$${precioU.toLocaleString('es-CL')}</td>
+                        <td class="py-3"><span class="badge bg-light text-dark border shadow-sm fs-6 px-3 py-2">${item.cantidad_producto || item.cantidad}</span></td>
+                        <td class="pe-4 py-3 fw-bold text-success text-end fs-5">$${subtotal.toLocaleString('es-CL')}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (error) {
+                console.error("Error:", error);
+                tbody.innerHTML = '<tr><td colspan="4" class="text-danger py-5"><i class="fa-solid fa-triangle-exclamation me-2"></i>Error al cargar los productos de esta venta.</td></tr>';
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('rol');
+            window.location.href = '/login/';
+        }
+    </script>
     
-    <table>
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Precio Unit.</th>
-                <th>Cantidad</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for d in detalles %}
-            <tr>
-                <td>{{ d.producto.nombre_producto }}</td>
-                <td>${{ d.precio_unitario }}</td>
-                <td>{{ d.cantidad }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="3" style="text-align: center;">No hay detalles registrados para esta venta.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <div class="total">
-        Total Pagado: ${{ venta.total }}
-    </div>
-
-    <div class="acciones">
-        <a href="{% url 'ver_ventas' %}" class="boton">⬅️ Volver al Historial</a>
-        <a href="{% url 'inicio' %}" class="boton" style="background-color: #777;">🏠 Volver al Inicio</a>
-    </div>
-
-</div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,103 +1,181 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Ingresar Cliente</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Cliente - Huellitas & Cía.</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome (Iconos de Mascotas) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
+        /* --- ESTILOS TEMÁTICOS TIENDA DE MASCOTAS --- */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
+            /* Imagen de fondo desde static */
+            background-image: url('{% static "img/fondo_mascotas.jpg" %}');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-color: #fdf8f5; 
         }
-        .contenedor {
-            width: 50%;
-            margin: 40px auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
+        .card-pet { 
+            border-radius: 1.5rem; 
+            border: none; 
+            border-top: 8px solid #ff7b54;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            background-color: rgba(255, 255, 255, 0.95);
         }
-        h1 {
-            text-align: center;
+        .btn-pet { 
+            background-color: #ff7b54; 
+            color: white; 
+            border: none; 
+            border-radius: 0.5rem; 
+            transition: 0.3s; 
         }
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: bold;
+        .btn-pet:hover { 
+            background-color: #f06a43; 
+            color: white; 
+            transform: translateY(-2px); 
         }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-        .boton {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 15px;
-            background-color: #333;
-            color: white;
-            text-decoration: none;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .acciones {
-            text-align: center;
-        }
-        /* ESTILO NUEVO PARA EL MENSAJE DE ERROR */
-        .error-msg {
-            background-color: #ffdddd;
-            color: #d8000c;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            margin-bottom: 15px;
-            border: 1px solid #d8000c;
+        .bg-pet { background-color: #ff7b54; }
+        .text-pet { color: #ff7b54; }
+        .form-control:focus {
+            border-color: #ff7b54;
+            box-shadow: 0 0 0 0.25rem rgba(255, 123, 84, 0.25);
         }
     </style>
 </head>
-<body>
+<body class="d-flex align-items-center" style="min-height: 100vh; padding: 2rem 0;">
 
-<div class="contenedor">
-
-    <h1>👤 Registrar Cliente</h1>
-
-    <!-- BLOQUE NUEVO: Muestra el error si el RUT ya existe -->
-    {% if error %}
-        <div class="error-msg">
-            <strong>❌ {{ error }}</strong>
+    <div class="container">
+        
+        <!-- Botón para volver al inicio -->
+        <div class="row justify-content-center mb-3">
+            <div class="col-md-8 col-lg-7 text-start">
+                <a href="/" class="btn btn-light rounded-pill fw-bold text-secondary shadow-sm px-4">
+                    <i class="fa-solid fa-arrow-left me-2"></i>Volver a la tienda
+                </a>
+            </div>
         </div>
-    {% endif %}
 
-    <form method="POST">
-        {% csrf_token %}
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-7">
+                <div class="card card-pet">
+                    
+                    <div class="card-header bg-transparent text-center py-4 border-0">
+                        <div class="d-inline-flex justify-content-center align-items-center bg-pet text-white rounded-circle mb-3 shadow-sm" style="width: 70px; height: 70px; font-size: 2rem;">
+                            <i class="fa-solid fa-user-plus"></i>
+                        </div>
+                        <h3 class="mb-0 fw-bold text-dark">Crea tu Cuenta</h3>
+                        <p class="mb-0 text-muted">Únete a la familia de Huellitas & Cía.</p>
+                    </div>
+                    
+                    <div class="card-body p-4 p-md-5 pt-0">
+                        
+                        <!-- Formulario de Registro -->
+                        <form id="registro-form" onsubmit="registrarCliente(event)">
+                            <div class="row bg-light rounded-4 p-4 shadow-sm border border-white mb-4">
+                                <div class="col-md-6 mb-3">
+                                    <label for="rut" class="form-label fw-bold text-secondary"><i class="fa-solid fa-id-card me-2 text-pet"></i>RUT</label>
+                                    <input type="text" id="rut" class="form-control form-control-lg border-0 shadow-sm" required placeholder="12345678-9">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="nombre" class="form-label fw-bold text-secondary"><i class="fa-solid fa-user me-2 text-pet"></i>Nombre Completo</label>
+                                    <input type="text" id="nombre" class="form-control form-control-lg border-0 shadow-sm" required placeholder="Juan Pérez">
+                                </div>
+                            </div>
 
-        <!-- Los name="" ahora coinciden con tu views.py -->
-        <label for="Rut">RUT:</label>
-        <input type="text" id="Rut" name="Rut" placeholder="12345678-9" required>
+                            <div class="mb-4">
+                                <label for="email" class="form-label fw-bold text-secondary"><i class="fa-solid fa-envelope me-2 text-pet"></i>Correo Electrónico</label>
+                                <input type="email" id="email" class="form-control form-control-lg shadow-sm" required placeholder="ejemplo@correo.com">
+                            </div>
 
-        <label for="Nombre">Nombre Completo:</label>
-        <input type="text" id="Nombre" name="Nombre" required>
+                            <div class="row mb-4">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label for="telefono" class="form-label fw-bold text-secondary"><i class="fa-solid fa-phone me-2 text-pet"></i>Teléfono</label>
+                                    <input type="text" id="telefono" class="form-control form-control-lg shadow-sm" required placeholder="+56912345678">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="password" class="form-label fw-bold text-secondary"><i class="fa-solid fa-lock me-2 text-pet"></i>Contraseña</label>
+                                    <input type="password" id="password" class="form-control form-control-lg shadow-sm" required placeholder="Crea una contraseña">
+                                </div>
+                            </div>
 
-        <label for="Correo">Correo Electrónico:</label>
-        <input type="email" id="Correo" name="Correo" required>
+                            <div class="mb-5">
+                                <label for="direccion" class="form-label fw-bold text-secondary"><i class="fa-solid fa-map-location-dot me-2 text-pet"></i>Dirección de Envío</label>
+                                <input type="text" id="direccion" class="form-control form-control-lg shadow-sm" required placeholder="Av. Siempre Viva 123">
+                            </div>
+                            
+                            <button type="submit" id="btn-registro" class="btn btn-pet btn-lg w-100 fw-bold shadow-sm py-3">
+                                <i class="fa-solid fa-paw me-2"></i> Registrarme
+                            </button>
+                        </form>
 
-        <label for="Telefono">Teléfono:</label>
-        <input type="text" id="Telefono" name="Telefono" required>
-
-        <label for="Direccion">Dirección:</label>
-        <input type="text" id="Direccion" name="Direccion" required>
-
-        <div class="acciones">
-            <button type="submit" class="boton">💾 Guardar Cliente</button>
-            <a href="{% url 'inicio' %}" class="boton" style="background-color: #777;">🏠 Volver</a>
+                        <div class="text-center mt-4 pt-3 border-top">
+                            <p class="text-muted mb-0 fs-5">¿Ya tienes cuenta? <a href="/login/" class="text-decoration-none fw-bold text-pet">Inicia sesión aquí</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </form>
+    </div>
 
-</div>
+    <!-- Lógica de conexión con RegistroApiView -->
+    <script>
+        async function registrarCliente(event) {
+            event.preventDefault(); 
+            
+            // Recolectar datos del formulario
+            const rut = document.getElementById('rut').value;
+            const nombre = document.getElementById('nombre').value;
+            const email = document.getElementById('email').value;
+            const telefono = document.getElementById('telefono').value;
+            const direccion = document.getElementById('direccion').value;
+            const password = document.getElementById('password').value;
+            
+            const btn = document.getElementById('btn-registro');
 
+            // Bloquear botón
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Procesando...';
+
+            try {
+                // Hacer POST a la API de registro
+                const response = await fetch('/api/registro/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        rut: rut,
+                        nombre: nombre,
+                        email: email,
+                        telefono: telefono,
+                        direccion: direccion,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert("¡Registro exitoso! Ya puedes iniciar sesión.");
+                    window.location.href = '/login/';
+                } else {
+                    // Si el backend devuelve un error (ej. RUT duplicado)
+                    alert(`Error al registrar: ${data.error || JSON.stringify(data)}`);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-paw me-2"></i> Registrarme';
+                }
+            } catch (error) {
+                console.error("Error en el registro:", error);
+                alert("Hubo un problema al conectar con el servidor.");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-paw me-2"></i> Registrarme';
+            }
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

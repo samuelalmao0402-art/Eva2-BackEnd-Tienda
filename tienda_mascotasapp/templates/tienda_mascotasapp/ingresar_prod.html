@@ -1,108 +1,235 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Ingresar Producto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingresar Producto - Huellitas & Cía.</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome (Iconos de Mascotas) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
+        /* --- ESTILOS TEMÁTICOS TIENDA DE MASCOTAS --- */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
+            /* Imagen de fondo desde static */
+            background-image: url('{% static "img/fondo_mascotas.jpg" %}');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-color: #fdf8f5; 
         }
-        .contenedor {
-            width: 50%;
-            margin: 40px auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
+        .navbar-pet { background-color: #ff7b54; } 
+        .card-pet { 
+            border-radius: 1.5rem; 
+            border: none; 
+            border-top: 8px solid #ff7b54;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            background-color: rgba(255, 255, 255, 0.95);
         }
-        h1 {
-            text-align: center;
+        .btn-pet { 
+            background-color: #ff7b54; 
+            color: white; 
+            border: none; 
+            border-radius: 0.5rem; 
+            transition: 0.3s; 
         }
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: bold;
+        .btn-pet:hover { 
+            background-color: #f06a43; 
+            color: white; 
+            transform: translateY(-2px); 
         }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-        .boton {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 15px;
-            background-color: #333;
-            color: white;
-            text-decoration: none;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .acciones {
-            text-align: center;
-        }
-        /* ESTILO PARA EL MENSAJE DE ERROR */
-        .error-msg {
-            background-color: #ffdddd;
-            color: #d8000c;
-            padding: 10px;
-            border-radius: 5px;
-            text-align: center;
-            margin-bottom: 15px;
-            border: 1px solid #d8000c;
+        .text-pet { color: #ff7b54; }
+        .form-control:focus, .form-select:focus {
+            border-color: #ff7b54;
+            box-shadow: 0 0 0 0.25rem rgba(255, 123, 84, 0.25);
         }
     </style>
 </head>
 <body>
 
-<div class="contenedor">
-
-    <h1>➕ Ingresar Producto</h1>
-
-    <!-- BLOQUE DE ERROR -->
-    {% if error %}
-        <div class="error-msg">
-            <strong>❌ {{ error }}</strong>
+    <!-- Navegación Admin Temática -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-pet mb-5 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="/inicio/">
+                <i class="fa-solid fa-paw me-2"></i>Huellitas & Cía. - Admin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center fw-semibold">
+                    <li class="nav-item"><a class="nav-link active" href="/ver_productos/"><i class="fa-solid fa-box me-1"></i> Productos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ver_clientes/"><i class="fa-solid fa-users me-1"></i> Clientes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ver_stock/"><i class="fa-solid fa-cubes me-1"></i> Stock</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/ver_ventas/"><i class="fa-solid fa-receipt me-1"></i> Ventas</a></li>
+                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                        <button class="btn btn-light btn-sm px-3 fw-bold text-pet rounded-pill" onclick="cerrarSesion()">
+                            <i class="fa-solid fa-right-from-bracket me-1"></i> Salir
+                        </button>
+                    </li>
+                </ul>
+            </div>
         </div>
-    {% endif %}
+    </nav>
 
-    <form method="POST">
-        {% csrf_token %}
+    <div class="container pb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-10 col-lg-8">
+                <div class="card card-pet">
+                    <div class="card-header bg-transparent d-flex justify-content-between align-items-center py-4 border-0">
+                        <h4 class="mb-0 fw-bold text-dark">
+                            <i class="fa-solid fa-box-open text-pet me-2"></i>Registrar Nuevo Producto
+                        </h4>
+                        <a href="/ver_productos/" class="btn btn-outline-secondary btn-sm rounded-pill fw-bold px-3 shadow-sm">
+                            <i class="fa-solid fa-list me-1"></i> Volver al Listado
+                        </a>
+                    </div>
+                    <div class="card-body p-4 p-md-5 pt-0">
+                        
+                        <form id="form-producto" onsubmit="guardarProducto(event)">
+                            <div class="row mb-4 bg-light p-4 rounded-4 shadow-sm border border-white">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label class="form-label fw-bold text-secondary"><i class="fa-solid fa-tag me-1"></i> Nombre del Producto</label>
+                                    <input type="text" id="nombre_producto" class="form-control form-control-lg border-0 shadow-sm" required placeholder="Ej: Saco Dog Chow 15kg">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-secondary"><i class="fa-solid fa-copyright me-1"></i> Marca</label>
+                                    <input type="text" id="marca" class="form-control form-control-lg border-0 shadow-sm" required placeholder="Ej: Purina">
+                                </div>
+                            </div>
 
-        <label for="Nombre_Producto">Nombre del Producto:</label>
-        <input type="text" id="Nombre_Producto" name="Nombre_Producto" required>
+                            <div class="row mb-4">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label class="form-label fw-bold text-secondary"><i class="fa-solid fa-layer-group me-1"></i> Categoría</label>
+                                    <select id="categoria" class="form-select form-select-lg shadow-sm" required>
+                                        <option value="" disabled selected>Seleccione...</option>
+                                        <option value="Perro">🐶 Perro</option>
+                                        <option value="Gato">🐱 Gato</option>
+                                        <option value="Aves">🦜 Aves</option>
+                                        <option value="Accesorios">🎾 Accesorios</option>
+                                        <option value="Farmacia">💊 Farmacia</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-secondary"><i class="fa-regular fa-calendar-xmark me-1"></i> Fecha de Vencimiento</label>
+                                    <input type="date" id="fecha_venc" class="form-control form-control-lg shadow-sm">
+                                    <small class="text-muted"><i class="fa-solid fa-circle-info me-1"></i>Dejar vacío si no aplica (ej. juguetes)</small>
+                                </div>
+                            </div>
 
-        <label for="Marca">Marca:</label>
-        <input type="text" id="Marca" name="Marca" required>
+                            <div class="row mb-4 align-items-end">
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <label class="form-label fw-bold text-secondary"><i class="fa-solid fa-money-bill-wave me-1"></i> Precio Costo ($)</label>
+                                    <input type="number" id="precio_costo" class="form-control form-control-lg shadow-sm font-monospace text-end" required min="0" placeholder="0">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold text-secondary"><i class="fa-solid fa-hand-holding-dollar me-1 text-success"></i> Precio Venta ($)</label>
+                                    <input type="number" id="precio_venta" class="form-control form-control-lg shadow-sm font-monospace text-end text-success fw-bold" required min="0" placeholder="0">
+                                </div>
+                            </div>
 
-        <label for="Categoria">Categoría:</label>
-        <input type="text" id="Categoria" name="Categoria" required>
+                            <hr class="my-5 border-2 opacity-10">
+                            
+                            <h5 class="text-pet fw-bold mb-4"><i class="fa-solid fa-boxes-stacked me-2"></i>Configuración de Inventario</h5>
+                            
+                            <div class="row mb-5 bg-light p-4 rounded-4 shadow-sm border border-white">
+                                <div class="col-md-4 mb-3 mb-md-0">
+                                    <label class="form-label fw-bold text-secondary">Stock Actual</label>
+                                    <input type="number" id="stock" class="form-control form-control-lg border-0 shadow-sm font-monospace text-center" required min="0" placeholder="0">
+                                </div>
+                                <div class="col-md-4 mb-3 mb-md-0">
+                                    <label class="form-label fw-bold text-secondary">Stock Mínimo</label>
+                                    <input type="number" id="stock_min" class="form-control form-control-lg border-0 shadow-sm font-monospace text-center" required min="1" placeholder="1">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold text-secondary">Estado Inicial</label>
+                                    <select id="estado" class="form-select form-select-lg border-0 shadow-sm fw-bold" required>
+                                        <option value="true" class="text-success">🟢 Activo</option>
+                                        <option value="false" class="text-danger">🔴 Inactivo</option>
+                                    </select>
+                                </div>
+                            </div>
 
-        <label for="Precio_Costo">Precio de Costo:</label>
-        <input type="number" id="Precio_Costo" name="Precio_Costo" step="0.01" required>
+                            <button type="submit" id="btn-guardar" class="btn btn-pet btn-lg w-100 fw-bold py-3 shadow-sm">
+                                <i class="fa-solid fa-plus-circle me-2"></i> Guardar Nuevo Producto
+                            </button>
+                        </form>
 
-        <label for="Precio_Venta">Precio de Venta:</label>
-        <input type="number" id="Precio_Venta" name="Precio_Venta" step="0.01" required>
-
-        <label for="Fecha_Venc">Fecha de Vencimiento (Opcional):</label>
-        <input type="date" id="Fecha_Venc" name="Fecha_Venc">
-
-        <label for="Stock_Inicial">Stock Inicial en Bodega:</label>
-        <input type="number" id="Stock_Inicial" name="Stock_Inicial" min="0" required>
-
-        <div class="acciones">
-            <button type="submit" class="boton">💾 Guardar Producto</button>
-            <a href="{% url 'inicio' %}" class="boton" style="background-color: #777;">🏠 Volver</a>
+                    </div>
+                </div>
+            </div>
         </div>
-    </form>
+    </div>
 
-</div>
+    <!-- Lógica de conexión con ProductosApiView -->
+    <script>
+        const token = localStorage.getItem('token');
+        const rol = localStorage.getItem('rol');
 
+        document.addEventListener("DOMContentLoaded", () => {
+            if (!token || rol !== 'admin') {
+                alert("Acceso denegado.");
+                window.location.href = '/login/';
+            }
+        });
+
+        async function guardarProducto(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('btn-guardar');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Guardando...';
+
+            const payload = {
+                nombre_producto: document.getElementById('nombre_producto').value.trim(),
+                marca: document.getElementById('marca').value.trim(),
+                categoria: document.getElementById('categoria').value,
+                precio_costo: parseFloat(document.getElementById('precio_costo').value),
+                precio_venta: parseFloat(document.getElementById('precio_venta').value),
+                fecha_venc: document.getElementById('fecha_venc').value || null,
+                estado: document.getElementById('estado').value === 'true',
+                stock: parseInt(document.getElementById('stock').value, 10),
+                stock_min: parseInt(document.getElementById('stock_min').value, 10)
+            };
+
+            try {
+                const response = await fetch('/api/producto/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert("¡Producto guardado exitosamente!");
+                    window.location.href = '/ver_productos/';
+                } else {
+                    const errorMsg = data.error || data.mensaje || data.detail || 'Revisa los datos ingresados.';
+                    alert(`Error: ${errorMsg}`);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-plus-circle me-2"></i> Guardar Nuevo Producto';
+                }
+            } catch (error) {
+                console.error("Error al guardar:", error);
+                alert("Ocurrió un error al conectar con el servidor.");
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-plus-circle me-2"></i> Guardar Nuevo Producto';
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('rol');
+            window.location.href = '/login/';
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

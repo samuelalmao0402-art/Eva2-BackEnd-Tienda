@@ -1,0 +1,244 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo - Huellitas & Cía.</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome (Iconos de Mascotas) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- ESTILOS TEMÁTICOS TIENDA DE MASCOTAS --- */
+        body {
+            /* Imagen de fondo desde static */
+            background-image: url('{% static "img/fondo_mascotas.jpg" %}');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-color: #fdf8f5; 
+        }
+        .navbar-pet { background-color: #ff7b54; } 
+        .card-pet { 
+            border-radius: 1.5rem; 
+            border: none; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); 
+            background-color: rgba(255, 255, 255, 0.95); /* Semi-transparente para leer bien */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-pet:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+        .bg-pet { background-color: #ff7b54; }
+        .text-pet { color: #ff7b54; }
+        .btn-pet { 
+            background-color: #ff7b54; 
+            color: white; 
+            border: none; 
+            border-radius: 0.5rem; 
+            transition: 0.3s; 
+        }
+        .btn-pet:hover { 
+            background-color: #f06a43; 
+            color: white; 
+            transform: translateY(-2px); 
+        }
+        .search-bar-pet {
+            border-radius: 2rem;
+            padding-left: 1.5rem;
+            border: 2px solid #ff7b54;
+        }
+        .search-bar-pet:focus {
+            box-shadow: 0 0 0 0.25rem rgba(255, 123, 84, 0.25);
+            border-color: #ff7b54;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navegación Cliente Temática -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-pet mb-5 shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-4" href="/">
+                <i class="fa-solid fa-paw me-2"></i>Huellitas & Cía.
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center fw-semibold">
+                    <li class="nav-item"><a class="nav-link active" href="/catalogo/"><i class="fa-solid fa-store me-1"></i> Catálogo</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/carrito/"><i class="fa-solid fa-cart-shopping me-1"></i> Mi Carrito</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/compras/"><i class="fa-solid fa-bag-shopping me-1"></i> Mis Compras</a></li>
+                    <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+                        <button class="btn btn-light btn-sm px-3 fw-bold text-pet rounded-pill" onclick="cerrarSesion()">
+                            <i class="fa-solid fa-right-from-bracket me-1"></i> Salir
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenedor Principal -->
+    <div class="container pb-5">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-5 bg-white bg-opacity-90 p-4 rounded-4 shadow-sm">
+            <h2 class="fw-bold text-dark mb-3 mb-md-0"><i class="fa-solid fa-shop text-pet me-3"></i>Catálogo de Productos</h2>
+            
+            <!-- Buscador Moderno -->
+            <div class="position-relative w-100" style="max-width: 400px;">
+                <i class="fa-solid fa-magnifying-glass position-absolute text-muted" style="top: 50%; right: 15px; transform: translateY(-50%);"></i>
+                <input type="text" id="buscador" class="form-control form-control-lg search-bar-pet" placeholder="Buscar huellitas, comida, juguetes..." onkeyup="buscarProductos()">
+            </div>
+        </div>
+
+        <!-- Grilla de Productos -->
+        <div class="row g-4" id="productos-container">
+            <!-- Loader inicial -->
+            <div class="col-12 text-center mt-5" id="cargando">
+                <div class="bg-white bg-opacity-75 rounded-4 shadow-sm p-5 d-inline-block">
+                    <div class="spinner-border text-pet" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">Cargando catálogo...</span>
+                    </div>
+                    <h5 class="text-muted mt-3 mb-0">Husmeando en el catálogo...</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lógica de conexión con la API -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            cargarProductos();
+        });
+
+        // 1. Cargar el catálogo (Público, no requiere token)
+        async function cargarProductos(filtroNombre = '') {
+            const contenedor = document.getElementById('productos-container');
+            let url = '/api/catalogo/';
+            
+            if (filtroNombre) {
+                url += `?nombre_producto=${filtroNombre}`;
+            }
+
+            try {
+                const response = await fetch(url);
+                const productos = await response.json();
+                
+                contenedor.innerHTML = ''; 
+
+                if (productos.length === 0) {
+                    contenedor.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <div class="bg-white bg-opacity-90 rounded-4 p-5 shadow-sm d-inline-block">
+                                <i class="fa-solid fa-bone text-muted opacity-25" style="font-size: 4rem;"></i>
+                                <h4 class="mt-3 text-dark">Ups, no encontramos nada</h4>
+                                <p class="text-muted mb-0">No hay productos que coincidan con tu búsqueda.</p>
+                            </div>
+                        </div>`;
+                    return;
+                }
+
+                // Generar las tarjetas (cards) dinámicamente con el diseño de tienda de mascotas
+                productos.forEach(prod => {
+                    const btnDisabled = prod.stock_disponible <= 0 ? 'disabled' : '';
+                    const stockText = prod.stock_disponible > 0 
+                        ? `<span class="text-success fw-bold"><i class="fa-solid fa-check-circle me-1"></i>Stock: ${prod.stock_disponible}</span>` 
+                        : `<span class="text-danger fw-bold"><i class="fa-solid fa-circle-xmark me-1"></i>Agotado</span>`;
+
+                    const card = `
+                        <div class="col-md-6 col-lg-4 col-xl-3 d-flex">
+                            <div class="card card-pet w-100 d-flex flex-column overflow-hidden">
+                                <!-- Imagen placeholder -->
+                                <div class="bg-light bg-opacity-50 text-center py-5 border-bottom">
+                                    <i class="fa-solid fa-box-open text-pet opacity-25" style="font-size: 5rem;"></i>
+                                </div>
+                                <div class="card-body d-flex flex-column p-4">
+                                    <span class="badge bg-pet text-white align-self-start mb-2 px-3 py-2 rounded-pill"><i class="fa-solid fa-tag me-1"></i> ${prod.categoria}</span>
+                                    <h5 class="card-title text-dark fw-bold mb-1">${prod.nombre_producto}</h5>
+                                    <h6 class="card-subtitle mb-3 text-muted"><i class="fa-solid fa-copyright me-1"></i> ${prod.marca}</h6>
+                                    
+                                    <!-- Precio se alinea al fondo -->
+                                    <div class="mt-auto">
+                                        <h2 class="card-text text-pet fw-bold mb-2">$${Number(prod.precio_venta).toLocaleString('es-CL')}</h2>
+                                        <p class="card-text mb-3 fs-6 bg-light bg-opacity-75 p-2 rounded text-center border">${stockText}</p>
+                                    </div>
+                                    
+                                    <button class="btn btn-pet w-100 fw-bold shadow-sm py-2" onclick="agregarAlCarrito(${prod.id}, ${prod.stock_disponible})" ${btnDisabled}>
+                                        <i class="fa-solid fa-cart-plus me-2"></i> Agregar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    contenedor.innerHTML += card;
+                });
+            } catch (error) {
+                console.error("Error al cargar el catálogo:", error);
+                contenedor.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <div class="alert alert-danger shadow-sm rounded-4 fs-5 p-4 border-0">
+                            <i class="fa-solid fa-triangle-exclamation me-2"></i> Error de conexión con el servidor.
+                        </div>
+                    </div>`;
+            }
+        }
+
+        function buscarProductos() {
+            const texto = document.getElementById('buscador').value;
+            cargarProductos(texto);
+        }
+
+        async function agregarAlCarrito(productoId, stockDisponible) {
+            if (stockDisponible <= 0) {
+                alert("Este producto está agotado.");
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                alert("Debes iniciar sesión para agregar productos al carrito.");
+                window.location.href = '/login/'; 
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/carrito/items/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${token}`
+                    },
+                    body: JSON.stringify({
+                        producto_id: productoId,
+                        cantidad_compra: 1
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(`¡Agregado correctamente! Tienes ${data.cantidad_compra} en tu carrito.`);
+                } else {
+                    alert(`Error: ${data.error || 'No se pudo agregar al carrito.'}`);
+                }
+            } catch (error) {
+                console.error("Error al agregar al carrito:", error);
+                alert("Ocurrió un error inesperado de conexión.");
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('rol');
+            window.location.href = '/login/';
+        }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
